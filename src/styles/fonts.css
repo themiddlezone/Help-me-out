@@ -1,0 +1,25 @@
+/*
+ * Self-hosted fonts, rebuilt by scripts/fonts.sh.
+ *
+ * Google Sans Flex is instanced to the axes the site uses (wght, wdth, ROND)
+ * and subset to Latin. Material Symbols Rounded only carries the icons we
+ * reference, with the FILL axis kept so icons can fill in when selected.
+ */
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../assets/fonts/google-sans-flex.woff2') format('woff2');
+  font-weight: 200 1000;
+  font-stretch: 25% 151%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  src: url('../assets/fonts/material-symbols-rounded.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  /* Icons are ligatures, so showing fallback text would print their names. */
+  font-display: block;
+}
