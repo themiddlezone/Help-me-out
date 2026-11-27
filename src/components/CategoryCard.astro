@@ -1,0 +1,203 @@
+---
+import Icon from './Icon.astro';
+import { categories, type CategoryId } from '../lib/categories';
+import { plural } from '../lib/format';
+import { morphStyle } from '../lib/shapes';
+import { url, vtName } from '../lib/url';
+
+/**
+ * One of the three big download cards on a device page. Categories without
+ * a source repo yet render as a non-clickable "coming soon" card.
+ */
+interface Props {
+  device: string;
+  category: CategoryId;
+  summary: string;
+  count: number;
+  available: boolean;
+}
+
+const { device, category, summary, count, available } = Astro.props;
+const info = categories[category];
+const Tag = available ? 'a' : 'div';
+const decor = {
+  roms: morphStyle('Circle', 'Cookie9Sided', 40),
+  recoveries: morphStyle('Pentagon', 'Gem', -30),
+  kernels: morphStyle('Circle', 'Sunny', 60),
+}[category];
+---
+
+<Tag
+  class:list={['category-card', `role-${info.role}`, { 'state morph-host': available, soon: !available }]}
+  href={available ? url(`/${device}/${category}/`) : undefined}
+  aria-disabled={available ? undefined : 'true'}
+  style={`view-transition-name: ${vtName('cat', device, category)}`}
+>
+  <span class="decor morph" style={decor} aria-hidden="true"></span>
+  <span class="icon-box" aria-hidden="true">
+    <Icon name={info.icon} fill />
+  </span>
+  <span class="text">
+    <span class="title">{info.title}</span>
+    <span class="sub">
+      {summary}
+      {available ? ` · ${plural(count, 'build')}` : ''}
+    </span>
+  </span>
+  {
+    available ? (
+      <span class="go" aria-hidden="true">
+        <Icon name="arrow_forward" />
+      </span>
+    ) : (
+      <span class="badge soon-badge">
+        <Icon name="hourglass_top" />
+        Coming soon
+      </span>
+    )
+  }
+</Tag>
+
+<style>
+  .category-card {
+    view-transition-class: morph;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr auto;
+    align-items: end;
+    gap: 16px;
+    min-block-size: clamp(15rem, 26vw, 20.5rem);
+    padding: 32px;
+    overflow: hidden;
+    border-radius: var(--shape-xxl);
+    background-color: var(--container);
+    color: var(--on-container);
+    transition:
+      border-radius var(--spring-default-spatial),
+      scale var(--spring-fast-spatial);
+  }
+
+  .role-primary {
+    --container: var(--md-sys-color-primary-container);
+    --on-container: var(--md-sys-color-on-primary-container);
+    --accent: var(--md-sys-color-primary);
+    --on-accent: var(--md-sys-color-on-primary);
+  }
+
+  .role-secondary {
+    --container: var(--md-sys-color-secondary-container);
+    --on-container: var(--md-sys-color-on-secondary-container);
+    --accent: var(--md-sys-color-secondary);
+    --on-accent: var(--md-sys-color-on-secondary);
+  }
+
+  .role-tertiary {
+    --container: var(--md-sys-color-tertiary-container);
+    --on-container: var(--md-sys-color-on-tertiary-container);
+    --accent: var(--md-sys-color-tertiary);
+    --on-accent: var(--md-sys-color-on-tertiary);
+  }
+
+  a.category-card:hover {
+    border-radius: var(--shape-xl);
+  }
+
+  a.category-card:active {
+    scale: 0.98;
+  }
+
+  .decor {
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -22%;
+    inset-inline-end: -18%;
+    inline-size: 58%;
+    aspect-ratio: 1;
+    background-color: var(--accent);
+    scale: 0.8;
+    translate: 12% -12%;
+  }
+
+  .morph-host:is(:hover, :focus-visible) .decor {
+    scale: 1;
+    translate: 0 0;
+  }
+
+  .soon .decor {
+    opacity: 0.4;
+  }
+
+  .icon-box {
+    grid-column: 1 / -1;
+    align-self: start;
+    display: grid;
+    place-items: center;
+    inline-size: 72px;
+    block-size: 72px;
+    border-radius: var(--shape-l-plus);
+    background-color: var(--accent);
+    color: var(--on-accent);
+    --icon-size: 36px;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      rotate var(--spring-fast-spatial);
+  }
+
+  .morph-host:hover .icon-box {
+    border-radius: 36px;
+    rotate: -6deg;
+  }
+
+  .text {
+    display: grid;
+    gap: 4px;
+    min-inline-size: 0;
+  }
+
+  .title {
+    font: var(--type-headline-m);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .sub {
+    font: var(--type-body-m);
+    opacity: 0.9;
+  }
+
+  .go {
+    display: grid;
+    place-items: center;
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: 28px;
+    background-color: var(--accent);
+    color: var(--on-accent);
+    transition:
+      border-radius var(--spring-fast-spatial),
+      translate var(--spring-fast-spatial);
+  }
+
+  .morph-host:hover .go {
+    border-radius: var(--shape-l);
+    translate: 4px 0;
+  }
+
+  .morph-host:active .go {
+    border-radius: var(--shape-m);
+  }
+
+  .soon {
+    cursor: default;
+  }
+
+  .soon-badge {
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    block-size: 32px;
+    padding-inline: 10px 14px;
+    font: var(--type-label-l);
+  }
+</style>

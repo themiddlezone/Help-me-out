@@ -1,0 +1,148 @@
+---
+import BuildBadges from './BuildBadges.astro';
+import Icon from './Icon.astro';
+import { buildPath, primaryAsset, type Build } from '../lib/data';
+import { formatBytes, formatDate } from '../lib/format';
+import { url, vtName } from '../lib/url';
+
+interface Props {
+  build: Build;
+  latest?: boolean;
+}
+
+const { build, latest } = Astro.props;
+const { title, subtitle, prerelease, publishedAt, tag, device, category } = build.data;
+const asset = primaryAsset(build);
+---
+
+<li
+  class="build-row state"
+  data-channel={prerelease ? 'test' : 'official'}
+  style={`view-transition-name: ${vtName('build', device, category, tag)}`}
+>
+  <span class:list={['lead', prerelease ? 'test' : 'official']} aria-hidden="true">
+    <Icon name={prerelease ? 'science' : 'verified'} fill />
+  </span>
+  <div class="text">
+    <a class="title stretch" href={url(buildPath(build))}>{title}</a>
+    {subtitle && <p class="sub">{subtitle}</p>}
+    <p class="meta">
+      <BuildBadges prerelease={prerelease} latest={latest} />
+      <span>{formatDate(publishedAt)}</span>
+      {asset && <span>{formatBytes(asset.size)}</span>}
+    </p>
+  </div>
+  {
+    asset && (
+      <a class="btn btn-icon btn-m btn-tonal download" href={asset.url} aria-label={`Download ${asset.name}`}>
+        <Icon name="download" />
+      </a>
+    )
+  }
+</li>
+
+<style>
+  .build-row {
+    view-transition-class: morph;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px 16px 16px;
+    border-radius: var(--shape-s);
+    background-color: var(--md-sys-color-surface-container-low);
+    transition:
+      border-radius var(--spring-default-spatial),
+      background-color var(--spring-default-effects);
+  }
+
+  .build-row:first-child {
+    border-start-start-radius: var(--shape-xl);
+    border-start-end-radius: var(--shape-xl);
+  }
+
+  .build-row:last-child {
+    border-end-start-radius: var(--shape-xl);
+    border-end-end-radius: var(--shape-xl);
+  }
+
+  .build-row:hover {
+    border-radius: var(--shape-xl);
+    background-color: var(--md-sys-color-surface-container);
+  }
+
+  .lead {
+    display: grid;
+    place-items: center;
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: var(--shape-l);
+    flex-shrink: 0;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      rotate var(--spring-fast-spatial);
+  }
+
+  .build-row:hover .lead {
+    border-radius: 28px;
+    rotate: -8deg;
+  }
+
+  .official {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .test {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .text {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .title {
+    font: var(--type-title-l);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .title:focus-visible {
+    outline: none;
+  }
+
+  .sub {
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-block-start: 6px;
+    font: var(--type-label-m);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .download {
+    position: relative;
+    z-index: 2;
+  }
+
+  .build-row:has(.title:focus-visible) {
+    outline: 3px solid var(--md-sys-color-secondary);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 30rem) {
+    .lead {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import Shape from '../../components/Shape.astro';
+import { getDevices, type Device } from '../../lib/data';
+import { url, vtName } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const devices = await getDevices();
+  return devices.map((device) => ({ params: { device: device.id }, props: { device } }));
+}
+
+interface Props {
+  device: Device;
+}
+
+const { device } = Astro.props;
+const { name, codename } = device.data;
+---
+
+<Base title={`Other files for ${name}`} device={{ id: device.id, name, codename }}>
+  <section class="page intro">
+    <Breadcrumbs items={[{ label: 'Devices', href: '/' }, { label: name, href: `/${device.id}/` }, { label: 'Other files' }]} />
+    <h1 class="display">Other files</h1>
+    <p class="lede">Firmware, tools and anything else that is not a ROM, recovery or kernel.</p>
+  </section>
+
+  <section class="page">
+    <div class="empty" style={`view-transition-name: ${vtName('other', device.id)}`}>
+      <div class="art" aria-hidden="true">
+        <Shape name="Clover4Leaf" class="back" />
+        <span class="folder">
+          <Icon name="folder" fill />
+        </span>
+      </div>
+      <h2>Nothing here yet</h2>
+      <p>Extra files will show up here when there is something to share.</p>
+      <a class="btn btn-tonal btn-m" href={url(`/${device.id}/`)}>
+        <Icon name="arrow_back" />
+        Back to {name}
+      </a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 12px;
+    padding-block: clamp(1.5rem, 4vw, 2.5rem) 2rem;
+  }
+
+  .intro h1 {
+    margin-block-start: 8px;
+  }
+
+  .empty {
+    view-transition-class: morph;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: clamp(40px, 8vw, 72px) 24px;
+    border-radius: var(--shape-xxl);
+    background-color: var(--md-sys-color-surface-container-low);
+    text-align: center;
+  }
+
+  .art {
+    display: grid;
+    place-items: center;
+    inline-size: 160px;
+    block-size: 160px;
+    margin-block-end: 12px;
+  }
+
+  .art > * {
+    grid-area: 1 / 1;
+  }
+
+  .art :global(.back) {
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--md-sys-color-secondary-container);
+    animation: turn 24s linear infinite;
+  }
+
+  .folder {
+    color: var(--md-sys-color-on-secondary-container);
+    --icon-size: 64px;
+  }
+
+  @keyframes turn {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  :global(:root[data-motion='lite']) .art :global(.back) {
+    animation: none;
+  }
+
+  h2 {
+    font: var(--type-headline-s);
+    font-weight: 650;
+  }
+
+  p {
+    color: var(--md-sys-color-on-surface-variant);
+    max-inline-size: 36ch;
+  }
+
+  .btn {
+    margin-block-start: 12px;
+  }
+</style>

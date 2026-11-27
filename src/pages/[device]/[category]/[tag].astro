@@ -1,0 +1,529 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import BuildBadges from '../../../components/BuildBadges.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+import Icon from '../../../components/Icon.astro';
+import { categories, type CategoryId } from '../../../lib/categories';
+import { getBuilds, getDevices, guideFor, latestOfficial, primaryAsset, type Build, type Device } from '../../../lib/data';
+import { formatBytes, formatDate } from '../../../lib/format';
+import { morphStyle } from '../../../lib/shapes';
+import { url, vtName } from '../../../lib/url';
+
+export async function getStaticPaths() {
+  const devices = await getDevices();
+  const builds = await getBuilds();
+  return builds.flatMap((build) => {
+    const device = devices.find((entry) => entry.id === build.data.device);
+    if (!device) return [];
+    const siblings = builds.filter(
+      (other) => other.data.device === build.data.device && other.data.category === build.data.category,
+    );
+    return [
+      {
+        params: { device: device.id, category: build.data.category, tag: build.data.tag },
+        props: { device, build, latest: latestOfficial(siblings) === build },
+      },
+    ];
+  });
+}
+
+interface Props {
+  device: Device;
+  build: Build;
+  latest: boolean;
+}
+
+const { device, build, latest } = Astro.props;
+const { title, subtitle, prerelease, publishedAt, tag, assets, category } = build.data;
+const info = categories[category as CategoryId];
+const { name, codename, brand } = device.data;
+const asset = primaryAsset(build);
+const guide = guideFor(device.id, category);
+const { Content } = build.rendered ? await render(build) : { Content: undefined };
+
+const fileIcon = (file: string) => (file.endsWith('.zip') ? 'folder_zip' : file.endsWith('.img') ? 'deployed_code' : 'description');
+---
+
+<Base
+  title={`${title} | ${info.title} for ${name}`}
+  description={`${build.data.name}. Download for the ${brand} ${name} (${codename}) with SHA-256 checksums.`}
+  device={{ id: device.id, name, codename }}
+  searchTitle={`${title}${title.toLowerCase().includes(info.singular.toLowerCase()) ? '' : ` ${info.singular}`} for ${brand} ${name}`}
+>
+  <article class="page release">
+    <Breadcrumbs
+      items={[
+        { label: 'Devices', href: '/' },
+        { label: name, href: `/${device.id}/` },
+        { label: info.title, href: `/${device.id}/${category}/` },
+        { label: title },
+      ]}
+    />
+
+    <header
+      class:list={['hero', `role-${info.role}`, 'morph-host']}
+      style={`view-transition-name: ${vtName('build', device.id, category, tag)}`}
+    >
+      <span class="decor morph" style={morphStyle('Cookie4Sided', info.shape, 30)} aria-hidden="true"></span>
+      <p class="badges">
+        <BuildBadges prerelease={prerelease} latest={latest} />
+      </p>
+      <h1>{title}</h1>
+      {subtitle && <p class="sub">{subtitle}</p>}
+      <p class="meta">
+        <span><Icon name="schedule" /> {formatDate(publishedAt)}</span>
+        <span><Icon name="tag" /> {tag}</span>
+      </p>
+
+      {
+        prerelease && (
+          <div class="warning" role="note">
+            <Icon name="warning" fill />
+            <p>
+              <strong>This is a test build.</strong> It can have bugs the official builds do not. Back up anything you
+              care about before flashing it.
+            </p>
+          </div>
+        )
+      }
+
+      {
+        asset && (
+          <div class="download">
+            <a class="btn btn-l dl" href={asset.url}>
+              <Icon name="download" />
+              Download
+            </a>
+            <p class="file">
+              <span class="file-name">{asset.name}</span>
+              <span>{formatBytes(asset.size)}</span>
+            </p>
+          </div>
+        )
+      }
+    </header>
+
+    <div class="columns">
+      <aside class="side">
+        <section class="card files" aria-labelledby="files">
+          <h2 id="files">Files</h2>
+          <ul>
+            {
+              assets.map((file) => (
+                <li>
+                  <span class="file-icon" aria-hidden="true">
+                    <Icon name={fileIcon(file.name)} />
+                  </span>
+                  <div class="file-text">
+                    <a class="stretch" href={file.url}>
+                      {file.name}
+                    </a>
+                    <span class="file-meta">
+                      {formatBytes(file.size)}
+                      {file.sha256 && (
+                        <>
+                          {' · '}
+                          <code title={file.sha256}>{file.sha256.slice(0, 12)}</code>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  {file.sha256 && <CopyButton text={file.sha256} label={`Copy SHA-256 of ${file.name}`} />}
+                  <Icon name="download" class="file-dl" />
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        {
+          guide && (
+            <a class="card guide state" href={url(guide)}>
+              <span class="guide-icon" aria-hidden="true">
+                <Icon name="menu_book" fill />
+              </span>
+              <span class="guide-text">
+                <span class="guide-title">How to install</span>
+                <span class="guide-sub">Step by step, from an unlocked bootloader</span>
+              </span>
+              <Icon name="arrow_forward" />
+            </a>
+          )
+        }
+
+        {
+          asset?.sha256 && (
+            <section class="card verify" aria-labelledby="verify">
+              <h2 id="verify">Check the download</h2>
+              <p>Compare this with the SHA-256 of the file you downloaded before you flash it.</p>
+              <div class="hash">
+                <code>{asset.sha256}</code>
+                <CopyButton text={asset.sha256} label="Copy SHA-256" />
+              </div>
+              <p class="hint">
+                On Linux or macOS run <code>sha256sum {asset.name}</code>. On Windows run{' '}
+                <code>certutil -hashfile {asset.name} SHA256</code>.
+              </p>
+            </section>
+          )
+        }
+      </aside>
+
+      <section class="notes" aria-labelledby="notes">
+        <h2 id="notes">Release notes</h2>
+        {
+          Content ? (
+            <div class="prose">
+              <Content />
+            </div>
+          ) : (
+            <p class="none">No notes were published with this release.</p>
+          )
+        }
+        <a class="btn btn-text github" href={build.data.url}>
+          <Icon name="open_in_new" />
+          View this release on GitHub
+        </a>
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .release {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding-block-start: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .hero {
+    view-transition-class: morph;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    justify-items: start;
+    gap: 12px;
+    padding: clamp(24px, 5vw, 48px);
+    overflow: hidden;
+    border-radius: var(--shape-xxl);
+    background-color: var(--container);
+    color: var(--on-container);
+  }
+
+  .role-primary {
+    --container: var(--md-sys-color-primary-container);
+    --on-container: var(--md-sys-color-on-primary-container);
+    --accent: var(--md-sys-color-primary);
+    --on-accent: var(--md-sys-color-on-primary);
+  }
+
+  .role-secondary {
+    --container: var(--md-sys-color-secondary-container);
+    --on-container: var(--md-sys-color-on-secondary-container);
+    --accent: var(--md-sys-color-secondary);
+    --on-accent: var(--md-sys-color-on-secondary);
+  }
+
+  .role-tertiary {
+    --container: var(--md-sys-color-tertiary-container);
+    --on-container: var(--md-sys-color-on-tertiary-container);
+    --accent: var(--md-sys-color-tertiary);
+    --on-accent: var(--md-sys-color-on-tertiary);
+  }
+
+  .decor {
+    position: absolute;
+    z-index: -1;
+    /* High enough that the notch at the top of the shape sits off the card. */
+    inset-block-start: -22%;
+    inset-inline-end: -8%;
+    inline-size: min(34rem, 60%);
+    aspect-ratio: 1;
+    background-color: var(--accent);
+    opacity: 0.18;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  h1 {
+    font: var(--type-display-m);
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .sub {
+    font: var(--type-title-l);
+    max-inline-size: 40ch;
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font: var(--type-label-l);
+    opacity: 0.9;
+  }
+
+  .meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    --icon-size: 18px;
+  }
+
+  .warning {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    max-inline-size: 44rem;
+    margin-block-start: 8px;
+    padding: 16px 20px;
+    border-radius: var(--shape-l-plus);
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    font: var(--type-body-m);
+  }
+
+  .warning strong {
+    font-weight: 700;
+  }
+
+  .download {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+    margin-block-start: 16px;
+  }
+
+  .dl {
+    --btn-bg: var(--accent);
+    --btn-fg: var(--on-accent);
+    box-shadow: var(--elevation-1);
+  }
+
+  .dl:hover {
+    box-shadow: var(--elevation-2);
+  }
+
+  @media (max-width: 40rem) {
+    .dl {
+      --btn-height: 72px;
+      --btn-pad: 32px;
+      --icon-size: 28px;
+      inline-size: 100%;
+    }
+  }
+
+  .file {
+    display: grid;
+    font: var(--type-body-m);
+    min-inline-size: 0;
+  }
+
+  .file-name {
+    font: var(--type-title-s);
+    overflow-wrap: anywhere;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-block-start: 12px;
+  }
+
+  @media (min-width: 64rem) {
+    .columns {
+      grid-template-columns: minmax(0, 1fr) 24rem;
+      align-items: start;
+    }
+
+    .side {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      inset-block-start: calc(var(--top-bar-height) + 16px);
+    }
+
+    .notes {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  .side {
+    display: grid;
+    gap: 16px;
+    min-inline-size: 0;
+  }
+
+  .card {
+    display: block;
+    padding: 24px;
+    border-radius: var(--shape-xl);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+
+  h2 {
+    font: var(--type-title-l);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .files ul {
+    display: grid;
+    gap: 2px;
+    margin: 16px -8px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .files li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: var(--shape-l);
+    transition: background-color var(--spring-default-effects);
+  }
+
+  .files li:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+  }
+
+  .file-icon {
+    display: grid;
+    place-items: center;
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: var(--shape-m);
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  .file-text {
+    display: grid;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .file-text a {
+    font: var(--type-label-l);
+    color: var(--md-sys-color-on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .file-meta {
+    font: var(--type-body-s);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .files li :global(.copy) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .files li :global(.file-dl) {
+    color: var(--md-sys-color-primary);
+    --icon-size: 20px;
+  }
+
+  .guide {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    transition: border-radius var(--spring-default-spatial);
+  }
+
+  .guide:hover {
+    border-radius: var(--shape-xxl);
+  }
+
+  .guide-icon {
+    display: grid;
+    place-items: center;
+    inline-size: 48px;
+    block-size: 48px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    flex-shrink: 0;
+  }
+
+  .guide-text {
+    display: grid;
+    flex: 1;
+  }
+
+  .guide-title {
+    font: var(--type-title-m);
+  }
+
+  .guide-sub {
+    font: var(--type-body-s);
+  }
+
+  .verify {
+    display: grid;
+    gap: 12px;
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .hash {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 14px;
+    border-radius: var(--shape-m);
+    background-color: var(--md-sys-color-surface-container-lowest);
+  }
+
+  .hash code {
+    flex: 1;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .hint code {
+    overflow-wrap: anywhere;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .notes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    min-inline-size: 0;
+  }
+
+  .notes > h2 {
+    font: var(--type-headline-s);
+    font-weight: 650;
+  }
+
+  .none {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .github {
+    justify-self: start;
+    margin-inline-start: -12px;
+  }
+</style>

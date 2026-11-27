@@ -1,0 +1,270 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import BuildRow from '../../../components/BuildRow.astro';
+import Icon from '../../../components/Icon.astro';
+import { categories, categoryIds, type CategoryId } from '../../../lib/categories';
+import { getBuilds, getDevices, guideFor, latestOfficial, type Device } from '../../../lib/data';
+import { plural } from '../../../lib/format';
+import { morphStyle } from '../../../lib/shapes';
+import { url, vtName } from '../../../lib/url';
+
+export async function getStaticPaths() {
+  const devices = await getDevices();
+  return devices.flatMap((device) =>
+    categoryIds
+      .filter((category) => device.data.categories[category].repo)
+      .map((category) => ({ params: { device: device.id, category }, props: { device, category } })),
+  );
+}
+
+interface Props {
+  device: Device;
+  category: CategoryId;
+}
+
+const { device, category } = Astro.props;
+const info = categories[category];
+const { name, codename, brand } = device.data;
+const builds = await getBuilds(device.id, category);
+const latest = latestOfficial(builds);
+const tests = builds.filter((build) => build.data.prerelease).length;
+const guide = guideFor(device.id, category);
+const repo = device.data.categories[category].repo;
+---
+
+<Base
+  title={`${info.title} for ${name}`}
+  description={`${info.title} for the ${brand} ${name} (${codename}). ${info.blurb}`}
+  device={{ id: device.id, name, codename }}
+  searchTitle={`${info.title} for ${brand} ${name}`}
+>
+  <section class="page intro">
+    <Breadcrumbs items={[{ label: 'Devices', href: '/' }, { label: name, href: `/${device.id}/` }, { label: info.title }]} />
+
+    <header
+      class:list={['panel', `role-${info.role}`, 'morph-host']}
+      style={`view-transition-name: ${vtName('cat', device.id, category)}`}
+    >
+      <span class="decor morph" style={morphStyle('Circle', info.shape, 45)} aria-hidden="true"></span>
+      <span class="icon-box" aria-hidden="true">
+        <Icon name={info.icon} fill />
+      </span>
+      <div class="panel-text">
+        <h1>{info.title}</h1>
+        <p>{device.data.categories[category].summary} · {plural(builds.length, 'build')}</p>
+      </div>
+      {
+        guide && (
+          <a class="btn btn-m guide" href={url(guide)}>
+            <Icon name="menu_book" />
+            Install guide
+          </a>
+        )
+      }
+    </header>
+  </section>
+
+  <section class="page builds" aria-label="Builds">
+    {
+      tests > 0 && tests < builds.length && (
+        <fieldset class="filters">
+          <legend class="sr-only">Show</legend>
+          <label class="chip">
+            <input type="radio" name="channel" value="all" checked />
+            <Icon name="check" />
+            All
+          </label>
+          <label class="chip">
+            <input type="radio" name="channel" value="official" />
+            <Icon name="check" />
+            Official
+          </label>
+          <label class="chip">
+            <input type="radio" name="channel" value="test" />
+            <Icon name="check" />
+            Test
+          </label>
+        </fieldset>
+      )
+    }
+
+    {
+      builds.length > 0 ? (
+        <ul class="list">
+          {builds.map((build) => (
+            <BuildRow build={build} latest={build === latest} />
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">No builds yet. Check back soon.</p>
+      )
+    }
+
+    <p class="legend">
+      <strong>Official</strong> builds are the recommended releases. <strong>Test</strong> builds are early previews
+      with the newest changes, for people who can live with a few bugs.
+    </p>
+    {
+      repo && (
+        <a class="btn btn-text source" href={`https://github.com/${repo}/releases`}>
+          <Icon name="open_in_new" />
+          All releases on GitHub
+        </a>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 20px;
+    padding-block: clamp(1.5rem, 4vw, 2.5rem) 2rem;
+  }
+
+  .panel {
+    view-transition-class: morph;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px 24px;
+    padding: clamp(24px, 4vw, 40px);
+    overflow: hidden;
+    border-radius: var(--shape-xxl);
+    background-color: var(--container);
+    color: var(--on-container);
+  }
+
+  .role-primary {
+    --container: var(--md-sys-color-primary-container);
+    --on-container: var(--md-sys-color-on-primary-container);
+    --accent: var(--md-sys-color-primary);
+    --on-accent: var(--md-sys-color-on-primary);
+  }
+
+  .role-secondary {
+    --container: var(--md-sys-color-secondary-container);
+    --on-container: var(--md-sys-color-on-secondary-container);
+    --accent: var(--md-sys-color-secondary);
+    --on-accent: var(--md-sys-color-on-secondary);
+  }
+
+  .role-tertiary {
+    --container: var(--md-sys-color-tertiary-container);
+    --on-container: var(--md-sys-color-on-tertiary-container);
+    --accent: var(--md-sys-color-tertiary);
+    --on-accent: var(--md-sys-color-on-tertiary);
+  }
+
+  .decor {
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -60%;
+    inset-inline-end: -6%;
+    block-size: 200%;
+    aspect-ratio: 1;
+    background-color: var(--accent);
+    opacity: 0.22;
+  }
+
+  .icon-box {
+    display: grid;
+    place-items: center;
+    inline-size: 80px;
+    block-size: 80px;
+    border-radius: var(--shape-xl);
+    background-color: var(--accent);
+    color: var(--on-accent);
+    --icon-size: 40px;
+  }
+
+  .panel-text {
+    flex: 1;
+    min-inline-size: 14rem;
+  }
+
+  h1 {
+    font: var(--type-display-s);
+    font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  .panel-text p {
+    font: var(--type-body-l);
+    margin-block-start: 4px;
+  }
+
+  .guide {
+    --btn-bg: var(--accent);
+    --btn-fg: var(--on-accent);
+  }
+
+  .builds {
+    display: grid;
+    gap: 16px;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .builds:has(input[value='official']:checked) :global(.build-row[data-channel='test']),
+  .builds:has(input[value='test']:checked) :global(.build-row[data-channel='official']) {
+    display: none;
+  }
+
+  /* Keep the rounded ends on whichever rows are left after filtering. */
+  .builds:has(input[value='official']:checked) :global(.build-row:nth-child(1 of [data-channel='official'])),
+  .builds:has(input[value='test']:checked) :global(.build-row:nth-child(1 of [data-channel='test'])) {
+    border-start-start-radius: var(--shape-xl);
+    border-start-end-radius: var(--shape-xl);
+  }
+
+  .builds:has(input[value='official']:checked) :global(.build-row:nth-last-child(1 of [data-channel='official'])),
+  .builds:has(input[value='test']:checked) :global(.build-row:nth-last-child(1 of [data-channel='test'])) {
+    border-end-start-radius: var(--shape-xl);
+    border-end-end-radius: var(--shape-xl);
+  }
+
+  .empty {
+    padding: 48px 24px;
+    border-radius: var(--shape-xl);
+    background-color: var(--md-sys-color-surface-container-low);
+    text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .legend {
+    margin-block-start: 8px;
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    max-inline-size: 60ch;
+  }
+
+  .legend strong {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+  }
+
+  .source {
+    justify-self: start;
+    margin-inline-start: -12px;
+  }
+</style>
