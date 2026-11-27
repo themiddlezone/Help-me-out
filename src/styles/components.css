@@ -1,0 +1,415 @@
+/*
+ * Shared building blocks: icons, buttons, chips, badges, state layers and a
+ * few layout helpers. Component specific styling lives next to the component.
+ *
+ * Anything that moves uses the spring tokens from src/lib/motion.ts:
+ *   --spring-<speed>-spatial for position, size and shape (may overshoot)
+ *   --spring-<speed>-effects for colour and opacity (never overshoots)
+ */
+
+@property --fill {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Icons ------------------------------------------------------------------ */
+
+.icon {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--icon-size, 24px);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  direction: ltr;
+  flex-shrink: 0;
+  font-feature-settings: 'liga';
+  font-variation-settings: 'FILL' var(--fill);
+  user-select: none;
+  transition: --fill var(--spring-default-effects);
+}
+
+.brand-icon {
+  inline-size: var(--icon-size, 24px);
+  block-size: var(--icon-size, 24px);
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Code never needs ligatures, they turn "-<" into an arrow in some fonts. */
+code,
+kbd,
+pre,
+samp {
+  font-variant-ligatures: none;
+}
+
+/* Focus and state layers -------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+.btn,
+.chip,
+.state {
+  position: relative;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn::before,
+.chip::before,
+.state::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--spring-fast-effects);
+}
+
+.btn:hover::before,
+.chip:hover::before,
+.state:hover::before {
+  opacity: var(--state-hover);
+}
+
+.btn:focus-visible::before,
+.chip:has(:focus-visible)::before,
+.state:focus-visible::before,
+.state:has(.stretch:focus-visible)::before {
+  opacity: var(--state-focus);
+}
+
+.btn:active::before,
+.chip:active::before,
+.state:active::before {
+  opacity: var(--state-pressed);
+}
+
+/* Buttons ------------------------------------------------------------------
+ * Sizes follow the M3 Expressive button spec. Round buttons squish to a
+ * smaller corner radius while pressed, on the fast spatial spring.
+ */
+
+.btn {
+  --btn-height: 40px;
+  --btn-pad: 16px;
+  --btn-gap: 8px;
+  --btn-square: 12px;
+  --btn-pressed: 8px;
+  --btn-radius: calc(var(--btn-height) / 2);
+  --icon-size: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  min-block-size: var(--btn-height);
+  padding-inline: var(--btn-pad);
+  border: 1px solid var(--btn-border, transparent);
+  border-radius: var(--btn-radius);
+  background-color: var(--btn-bg, transparent);
+  color: var(--btn-fg, var(--md-sys-color-primary));
+  font: var(--type-label-l);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-radius var(--spring-fast-spatial),
+    background-color var(--spring-default-effects),
+    color var(--spring-default-effects),
+    box-shadow var(--spring-default-effects),
+    scale var(--spring-fast-spatial);
+}
+
+.btn:active {
+  border-radius: var(--btn-pressed);
+}
+
+.btn.square {
+  --btn-radius: var(--btn-square);
+}
+
+.btn-xs {
+  --btn-height: 32px;
+  --btn-pad: 12px;
+  --btn-gap: 4px;
+}
+
+.btn-m {
+  --btn-height: 56px;
+  --btn-pad: 24px;
+  --btn-square: 16px;
+  --btn-pressed: 12px;
+  --icon-size: 24px;
+  font: var(--type-title-m);
+}
+
+.btn-l {
+  --btn-height: 96px;
+  --btn-pad: 48px;
+  --btn-gap: 12px;
+  --btn-square: 28px;
+  --btn-pressed: 16px;
+  --icon-size: 32px;
+  font: var(--type-headline-s);
+}
+
+.btn-xl {
+  --btn-height: 136px;
+  --btn-pad: 64px;
+  --btn-gap: 16px;
+  --btn-square: 28px;
+  --btn-pressed: 16px;
+  --icon-size: 40px;
+  font: var(--type-headline-l);
+}
+
+.btn-icon {
+  padding-inline: 0;
+  inline-size: var(--btn-height);
+  --icon-size: calc(var(--btn-height) * 0.5);
+}
+
+.btn-s.btn-icon,
+.btn-xs.btn-icon {
+  --icon-size: 24px;
+}
+
+.btn-filled {
+  --btn-bg: var(--md-sys-color-primary);
+  --btn-fg: var(--md-sys-color-on-primary);
+}
+
+.btn-tonal {
+  --btn-bg: var(--md-sys-color-secondary-container);
+  --btn-fg: var(--md-sys-color-on-secondary-container);
+}
+
+.btn-outlined {
+  --btn-border: var(--md-sys-color-outline-variant);
+  --btn-fg: var(--md-sys-color-on-surface-variant);
+}
+
+.btn-standard {
+  --btn-bg: var(--md-sys-color-surface-container-high);
+  --btn-fg: var(--md-sys-color-on-surface-variant);
+}
+
+.btn-text {
+  --btn-pad: 12px;
+}
+
+/* Chips ------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  block-size: 32px;
+  padding-inline: 16px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-s);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--type-label-l);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-radius var(--spring-fast-spatial),
+    padding var(--spring-fast-spatial),
+    gap var(--spring-fast-spatial),
+    background-color var(--spring-default-effects),
+    border-color var(--spring-default-effects),
+    color var(--spring-default-effects);
+}
+
+.chip input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chip .icon {
+  --icon-size: 18px;
+  inline-size: 0;
+  transition: inline-size var(--spring-fast-spatial);
+}
+
+.chip:has(:checked) {
+  gap: 8px;
+  padding-inline-start: 8px;
+  border-color: transparent;
+  border-radius: 16px;
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.chip:has(:checked) .icon {
+  inline-size: 1em;
+}
+
+.chip:has(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* Badges ------------------------------------------------------------------ */
+
+.badge {
+  --icon-size: 16px;
+  --fill: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  block-size: 24px;
+  padding-inline: 6px 10px;
+  border-radius: var(--shape-full);
+  font: var(--type-label-m);
+  white-space: nowrap;
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.badge-official {
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.badge-test {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.badge-latest {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+/* Shapes -------------------------------------------------------------------
+ * .morph elements carry two clip-path shape() values in --morph-from and
+ * --morph-to, generated by src/lib/shapes.ts with matching commands so the
+ * browser can interpolate them. A .morph-host flips them on hover or focus.
+ */
+
+.morph {
+  clip-path: var(--morph-from);
+  transition:
+    clip-path var(--spring-slow-spatial),
+    rotate var(--spring-slow-spatial),
+    scale var(--spring-slow-spatial),
+    translate var(--spring-slow-spatial);
+}
+
+.morph-host:is(:hover, :focus-within) .morph {
+  clip-path: var(--morph-to);
+  rotate: var(--morph-rotate, 0deg);
+}
+
+@supports not (clip-path: shape(from 0 0, line to 100% 0, line to 0 100%, close)) {
+  .morph,
+  .morph-host:is(:hover, :focus-within) .morph {
+    clip-path: none;
+    border-radius: 32%;
+  }
+}
+
+/* Layout ------------------------------------------------------------------ */
+
+.page {
+  inline-size: min(100% - 2 * var(--page-gutter), var(--page-max));
+  margin-inline: auto;
+}
+
+.eyebrow {
+  font: var(--type-title-s);
+  color: var(--md-sys-color-primary);
+}
+
+.display {
+  font: var(--type-display-l);
+  font-size: clamp(2.5rem, 1.6rem + 3.6vw, 3.5625rem);
+  line-height: 1.1;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  font: var(--type-body-l);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  inset-block-start: 12px;
+  inset-inline-start: 12px;
+  z-index: 100;
+  translate: 0 -200%;
+}
+
+.skip-link:focus-visible {
+  translate: 0;
+}
+
+/* Entry motion -------------------------------------------------------------
+ * Cards spring up as a page arrives, staggered by --i.
+ */
+
+@keyframes vf-rise {
+  from {
+    translate: 0 32px;
+    scale: 0.96;
+  }
+}
+
+@keyframes vf-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.rise {
+  animation:
+    vf-rise var(--spring-default-spatial) both,
+    vf-fade var(--spring-default-effects) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+:root[data-motion='lite'] .rise {
+  animation: none;
+}

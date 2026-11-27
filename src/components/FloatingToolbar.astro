@@ -1,0 +1,167 @@
+---
+import Icon from './Icon.astro';
+import { sections, type SectionId } from '../lib/site';
+import { url } from '../lib/url';
+
+/**
+ * The M3 Expressive floating toolbar that stands in for a nav bar. The
+ * current section gets a pill with its label, and that pill slides to the
+ * next section during page transitions.
+ */
+interface Props {
+  current: SectionId;
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="floating-toolbar" aria-label="Sections">
+  <ul>
+    {
+      sections.map((section) => {
+        const active = section.id === current;
+        return (
+          <li>
+            <a
+              class:list={['item', 'state', { active }]}
+              href={url(section.href)}
+              aria-current={active ? 'true' : undefined}
+              aria-label={active ? undefined : section.label}
+              data-tooltip={section.label}
+            >
+              {active && <span class="indicator" aria-hidden="true" />}
+              <span class="content">
+                <Icon name={section.icon} />
+                {active && <span class="label">{section.label}</span>}
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .floating-toolbar {
+    view-transition-name: floating-toolbar;
+    position: fixed;
+    inset-block-end: max(16px, env(safe-area-inset-bottom));
+    inset-inline: 0;
+    z-index: 20;
+    inline-size: max-content;
+    max-inline-size: calc(100vw - 16px);
+    margin-inline: auto;
+    padding: 8px;
+    border-radius: var(--shape-full);
+    background-color: var(--md-sys-color-surface-container);
+    box-shadow: var(--elevation-3);
+  }
+
+  ul {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 48px;
+    block-size: 48px;
+    padding-inline: 12px;
+    border-radius: var(--shape-full);
+    color: var(--md-sys-color-on-surface-variant);
+    font: var(--type-label-l);
+    white-space: nowrap;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      color var(--spring-default-effects);
+  }
+
+  .item:active {
+    border-radius: var(--shape-m);
+  }
+
+  .content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .active {
+    --fill: 1;
+    padding-inline: 16px 20px;
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .active .content {
+    view-transition-name: toolbar-current;
+  }
+
+  .indicator {
+    view-transition-name: toolbar-indicator;
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: inherit;
+    background-color: var(--md-sys-color-primary-container);
+  }
+
+  /* Plain tooltip for the icon-only items. */
+  .item:not(.active)::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    inset-block-end: calc(100% + 16px);
+    inset-inline-start: 50%;
+    translate: -50% 4px;
+    scale: 0.8;
+    padding: 4px 8px;
+    border-radius: var(--shape-xs);
+    background-color: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
+    font: var(--type-body-s);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--spring-fast-effects),
+      translate var(--spring-fast-spatial),
+      scale var(--spring-fast-spatial);
+  }
+
+  .item:not(.active):is(:hover, :focus-visible)::after {
+    opacity: 1;
+    translate: -50% 0;
+    scale: 1;
+    transition-delay: 250ms;
+  }
+
+  @media (hover: none) {
+    .item::after {
+      display: none;
+    }
+  }
+
+  @media (max-width: 25rem) {
+    .floating-toolbar {
+      padding: 6px;
+    }
+
+    .item {
+      min-inline-size: 44px;
+      block-size: 44px;
+      padding-inline: 10px;
+    }
+
+    .active {
+      padding-inline: 12px 16px;
+    }
+
+    .content {
+      gap: 6px;
+    }
+  }
+</style>

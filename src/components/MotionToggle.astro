@@ -1,0 +1,90 @@
+---
+import Icon from './Icon.astro';
+
+/**
+ * Cycles the motion preference between Auto, Full and Lite. The choice is
+ * kept in localStorage and read before paint by SharedHead.astro.
+ */
+---
+
+<button class="btn btn-outlined square motion-toggle" type="button" data-motion-toggle>
+  <Icon name="motion_photos_auto" data-motion-icon />
+  <span>Motion: <span data-motion-label>Auto</span></span>
+</button>
+
+<script>
+  const root = document.documentElement;
+  const order = ['auto', 'full', 'lite'] as const;
+  type Pref = (typeof order)[number];
+  const labels: Record<Pref, string> = { auto: 'Auto', full: 'Full', lite: 'Lite' };
+  const icons: Record<Pref, string> = { auto: 'motion_photos_auto', full: 'animation', lite: 'motion_photos_off' };
+
+  const current = (): Pref => {
+    const pref = root.dataset.motionPref as Pref | undefined;
+    return pref && order.includes(pref) ? pref : 'auto';
+  };
+
+  function apply(pref: Pref) {
+    root.dataset.motionPref = pref;
+    root.dataset.motion = pref === 'auto' ? (root.dataset.motionAuto ?? 'full') : pref;
+    try {
+      if (pref === 'auto') localStorage.removeItem('motion');
+      else localStorage.setItem('motion', pref);
+    } catch {
+      // Private browsing can block storage, the choice then lasts for this page.
+    }
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-motion-toggle]')) {
+      const mode = root.dataset.motion === 'lite' ? 'reduced' : 'full';
+      button.querySelector('[data-motion-label]')!.textContent = labels[pref];
+      button.querySelector('[data-motion-icon]')!.textContent = icons[pref];
+      button.title = pref === 'auto' ? `Picked for this device: ${mode} motion` : '';
+    }
+  }
+
+  apply(current());
+
+  document.querySelectorAll('[data-motion-toggle]').forEach((button) =>
+    button.addEventListener('click', () => {
+      apply(order[(order.indexOf(current()) + 1) % order.length]!);
+    }),
+  );
+
+  // On auto, watch the first second of frames once per visit. A device that
+  // cannot keep up gets lite motion from then on.
+  if (current() === 'auto' && root.dataset.motionAuto === 'full') {
+    let stored: string | null = null;
+    try {
+      stored = sessionStorage.getItem('motion-probe');
+    } catch {
+      stored = 'ok';
+    }
+
+    if (!stored) {
+      const gaps: number[] = [];
+      let last = 0;
+      const sample = (now: number) => {
+        if (last) gaps.push(now - last);
+        last = now;
+        if (gaps.length < 60) {
+          requestAnimationFrame(sample);
+          return;
+        }
+        gaps.sort((a, b) => a - b);
+        const median = gaps[gaps.length >> 1]!;
+        const slow = median > 34;
+        try {
+          sessionStorage.setItem('motion-probe', slow ? 'slow' : 'ok');
+        } catch {
+          // Nothing to remember it in.
+        }
+        if (slow) {
+          root.dataset.motionAuto = 'lite';
+          apply('auto');
+        }
+      };
+      const begin = () => requestAnimationFrame(sample);
+      if (document.readyState === 'complete') begin();
+      else addEventListener('load', begin, { once: true });
+    }
+  }
+</script>

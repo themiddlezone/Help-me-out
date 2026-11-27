@@ -1,0 +1,97 @@
+---
+import '../styles/global.css';
+import FloatingToolbar from '../components/FloatingToolbar.astro';
+import NavLoader from '../components/NavLoader.astro';
+import SharedHead from '../components/SharedHead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import TopBar from '../components/TopBar.astro';
+import { sectionFor, site } from '../lib/site';
+import { stripBase, url } from '../lib/url';
+
+/** Shell for the download pages. Docs pages get the same chrome through Starlight overrides. */
+interface Props {
+  title?: string;
+  description?: string;
+  /** Show this device as a chip in the top bar. */
+  device?: { id: string; name: string; codename: string };
+  /** Include the page in site search, under this title. */
+  searchTitle?: string;
+}
+
+const { title, description = site.description, device, searchTitle } = Astro.props;
+const pageTitle = title ? `${title} | ${site.name}` : `${site.name} | ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const section = sectionFor(stripBase(Astro.url.pathname));
+---
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title ?? site.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <SharedHead />
+    <style>
+      .site-header {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 10;
+        padding-inline: 1rem;
+        background-color: var(--md-sys-color-background);
+      }
+
+      @media (min-width: 50rem) {
+        .site-header {
+          padding-inline: 1.5rem;
+        }
+      }
+
+      /* Lift the bar onto a container colour once the page scrolls under it. */
+      @supports (animation-timeline: scroll()) {
+        .site-header {
+          /* Longhands on purpose: the minifier folds a shorthand plus timeline into one invalid declaration. */
+          animation-name: lift;
+          animation-timing-function: linear;
+          animation-fill-mode: both;
+          animation-timeline: scroll();
+          animation-range: 0 64px;
+        }
+      }
+
+      @keyframes lift {
+        to {
+          background-color: var(--md-sys-color-surface-container);
+        }
+      }
+
+      main {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link btn btn-filled" href="#main">Skip to content</a>
+    <header class="site-header">
+      <TopBar device={device} />
+    </header>
+    <main
+      id="main"
+      data-pagefind-body={searchTitle ? '' : undefined}
+      data-pagefind-meta={searchTitle ? `title:${searchTitle}` : undefined}
+    >
+      <slot />
+    </main>
+    <SiteFooter />
+    <FloatingToolbar current={section} />
+    <NavLoader />
+  </body>
+</html>

@@ -1,0 +1,48 @@
+---
+/**
+ * Head tags every page needs, Starlight or not: font preloads, the spring
+ * motion tokens and the motion mode script that has to run before paint.
+ */
+import sansUrl from '../assets/fonts/google-sans-flex.woff2?url';
+import iconsUrl from '../assets/fonts/material-symbols-rounded.woff2?url';
+import { motionCss } from '../lib/motion';
+
+const motion = motionCss();
+---
+
+<meta name="theme-color" content="#1a1112" />
+<meta name="color-scheme" content="dark" />
+<link rel="preload" href={sansUrl} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={iconsUrl} as="font" type="font/woff2" crossorigin />
+<style is:inline set:html={motion}></style>
+<script is:inline>
+  // Motion mode: "full" gets every spring and page transition, "lite" turns
+  // them off. People pick in the footer, "auto" decides from the device.
+  (() => {
+    const root = document.documentElement;
+    const read = (store, key) => {
+      try {
+        return window[store].getItem(key);
+      } catch {
+        return null;
+      }
+    };
+    const nav = navigator;
+    const weak =
+      matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      nav.connection?.saveData === true ||
+      (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) ||
+      (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 2) ||
+      read('sessionStorage', 'motion-probe') === 'slow';
+    const pref = read('localStorage', 'motion') || 'auto';
+    root.dataset.motionAuto = weak ? 'lite' : 'full';
+    root.dataset.motionPref = pref;
+    root.dataset.motion = pref === 'auto' ? root.dataset.motionAuto : pref;
+
+    const skip = (event) => {
+      if (root.dataset.motion === 'lite') event.viewTransition?.skipTransition();
+    };
+    addEventListener('pageswap', skip);
+    addEventListener('pagereveal', skip);
+  })();
+</script>

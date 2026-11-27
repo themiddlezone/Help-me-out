@@ -1,0 +1,153 @@
+---
+import BrandIcon from './BrandIcon.astro';
+import Icon from './Icon.astro';
+import MotionToggle from './MotionToggle.astro';
+import Wordmark from './Wordmark.astro';
+import { sections, site, socials } from '../lib/site';
+import { url } from '../lib/url';
+
+const handles: Record<string, string> = {
+  Telegram: 't.me/Varifocal',
+  GitHub: 'github.com/varifocal',
+  Email: site.email,
+};
+---
+
+<footer class="site-footer">
+  <div class="page">
+    <div class="top">
+      <div class="about">
+        <Wordmark />
+        <p>ROMs, recoveries and kernels for phones that deserve a second life. Built by Varifocal.</p>
+      </div>
+
+      <nav class="links" aria-label="Footer">
+        <div>
+          <h2>Pages</h2>
+          <ul>
+            {
+              sections.map((section) => (
+                <li>
+                  <a href={url(section.href)}>{section.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div>
+          <h2>Social</h2>
+          <ul class="social">
+            {
+              socials.map((social) => (
+                <li>
+                  <a href={social.href} rel={social.icon === 'mail' ? undefined : 'me noopener'}>
+                    {social.icon === 'mail' ? <Icon name="mail" /> : <BrandIcon name={social.icon} />}
+                    <span>
+                      {social.label}
+                      <small>{handles[social.label]}</small>
+                    </span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <div class="bottom">
+      <p>Flash at your own risk. Not affiliated with Samsung, Google or LineageOS.</p>
+      <MotionToggle />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-block-start: clamp(4rem, 10vw, 7rem);
+    padding-block: 3.5rem calc(var(--toolbar-height) + 4rem);
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 3rem;
+  }
+
+  .about {
+    display: grid;
+    gap: 1rem;
+    max-inline-size: 36rem;
+  }
+
+  .about p {
+    font: var(--type-body-l);
+  }
+
+  .links {
+    display: flex;
+    gap: clamp(2.5rem, 8vw, 6rem);
+  }
+
+  h2 {
+    margin-block-end: 1rem;
+    font: var(--type-title-s);
+    color: var(--md-sys-color-primary);
+  }
+
+  ul {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 6px;
+    font: var(--type-body-l);
+    color: var(--md-sys-color-on-surface);
+    transition:
+      color var(--spring-default-effects),
+      translate var(--spring-fast-spatial);
+  }
+
+  a:hover {
+    color: var(--md-sys-color-primary);
+    translate: 4px 0;
+  }
+
+  .social a {
+    --icon-size: 20px;
+  }
+
+  .social span {
+    display: grid;
+  }
+
+  small {
+    font: var(--type-label-s);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-block-start: 3rem;
+    padding-block-start: 2rem;
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .bottom p {
+    font: var(--type-body-s);
+  }
+</style>

@@ -1,0 +1,20 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * A Material Symbols Rounded icon. Only icons listed in scripts/fonts.sh are
+ * in the subset font, add new names there and rerun it.
+ */
+interface Props extends HTMLAttributes<'span'> {
+  name: string;
+  /** Use the filled style. */
+  fill?: boolean;
+  /** Size in pixels, defaults to the surrounding --icon-size. */
+  size?: number;
+}
+
+const { name, class: className, fill, size, ...rest } = Astro.props;
+const style = [fill && '--fill: 1', size && `--icon-size: ${size}px`].filter(Boolean).join('; ');
+---
+
+<span class:list={['icon', className]} style={style || undefined} aria-hidden="true" data-pagefind-ignore {...rest}>{name}</span>

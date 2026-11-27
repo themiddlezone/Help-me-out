@@ -1,0 +1,15 @@
+---
+import { shapePath, type ShapeName } from '../lib/shapes';
+
+/** A static Material shape drawn with SVG, filled with currentColor. */
+interface Props {
+  name: ShapeName;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+---
+
+<svg class:list={['shape', className]} viewBox="0 0 1 1" aria-hidden="true">
+  <path d={shapePath(name)} fill="currentColor"></path>
+</svg>

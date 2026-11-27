@@ -1,0 +1,163 @@
+---
+import Icon from './Icon.astro';
+import SearchDialog from './SearchDialog.astro';
+import { site } from '../lib/site';
+import { url, vtName } from '../lib/url';
+
+/**
+ * Brand, the current device as a chip, and search. Rendered on its own in
+ * custom pages and inside Starlight's fixed header on docs pages.
+ */
+interface Props {
+  device?: { id: string; name: string; codename: string };
+}
+
+const { device } = Astro.props;
+---
+
+<div class="top-bar">
+  <nav class="trail" aria-label="Site">
+    <a class:list={['brand', 'state', { compact: device }]} href={url('/')}>
+      <span class="mark" aria-hidden="true">V</span>
+      <span class="name">{site.name}</span>
+    </a>
+    {
+      device && (
+        <>
+          <Icon name="chevron_right" class="sep" />
+          <a
+            class="device state"
+            href={url(`/${device.id}/`)}
+            style={`view-transition-name: ${vtName('device', device.id)}`}
+          >
+            <span class="device-icon">
+              <Icon name="smartphone" />
+            </span>
+            <span class="device-text">
+              <span class="device-name">{device.name}</span>
+              <span class="device-code">{device.codename}</span>
+            </span>
+          </a>
+        </>
+      )
+    }
+  </nav>
+  <SearchDialog />
+</div>
+
+<style>
+  .top-bar {
+    view-transition-name: top-bar;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    block-size: var(--top-bar-height);
+  }
+
+  .trail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-inline-size: 0;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 14px 4px 4px;
+    border-radius: var(--shape-full);
+    font: var(--type-title-l);
+    font-weight: 450;
+    color: var(--md-sys-color-on-surface);
+    flex-shrink: 0;
+  }
+
+  .mark {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    border-radius: var(--shape-m);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    font-size: 22px;
+    font-weight: 600;
+    font-variation-settings: 'ROND' 100;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      rotate var(--spring-fast-spatial);
+  }
+
+  .brand:hover .mark,
+  .brand:focus-visible .mark {
+    border-radius: 22px;
+    rotate: -8deg;
+  }
+
+  .brand:active .mark {
+    border-radius: var(--shape-s);
+    rotate: 0deg;
+  }
+
+  .sep {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .device {
+    view-transition-class: morph;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-inline-size: 0;
+    padding: 6px 16px 6px 6px;
+    border-radius: var(--shape-l-plus);
+    background-color: var(--md-sys-color-surface-container-high);
+    transition: border-radius var(--spring-fast-spatial);
+  }
+
+  .device:active {
+    border-radius: var(--shape-m);
+  }
+
+  .device-icon {
+    display: grid;
+    place-items: center;
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: var(--shape-m);
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    flex-shrink: 0;
+  }
+
+  .device-text {
+    display: grid;
+    min-inline-size: 0;
+  }
+
+  .device-name {
+    font: var(--type-label-l);
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .device-code {
+    font: var(--type-label-s);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  @media (max-width: 34rem) {
+    .compact .name,
+    .compact + :global(.sep) {
+      display: none;
+    }
+
+    .compact {
+      padding-inline-end: 4px;
+    }
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+/**
+ * The footer wordmark. Every letter gets its own size, weight, width and
+ * roundness from Google Sans Flex's variable axes, and springs to a
+ * different mix when pointed at.
+ */
+
+// [letter, size, weight, width, roundness] at rest, then the hover mix.
+const letters: [string, number, number, number, number, number, number, number][] = [
+  ['V', 1, 900, 125, 100, 300, 75, 0],
+  ['a', 0.78, 350, 110, 100, 1000, 151, 100],
+  ['r', 0.9, 760, 60, 0, 250, 140, 100],
+  ['i', 1.02, 300, 40, 100, 1000, 90, 0],
+  ['f', 0.94, 1000, 151, 100, 400, 50, 0],
+  ['o', 0.74, 520, 151, 100, 1000, 25, 100],
+  ['c', 0.9, 260, 75, 0, 900, 151, 100],
+  ['a', 1.02, 920, 112, 100, 300, 60, 0],
+  ['l', 0.86, 460, 40, 50, 1000, 151, 100],
+];
+---
+
+<p class="wordmark" aria-label="Varifocal">
+  {
+    letters.map(([char, size, wght, wdth, rond, hWght, hWdth, hRond], i) => (
+      <span
+        class="letter"
+        aria-hidden="true"
+        style={`--i: ${i}; --size: ${size}; --wght: ${wght}; --wdth: ${wdth}%; --rond: ${rond}; --h-wght: ${hWght}; --h-wdth: ${hWdth}%; --h-rond: ${hRond}`}
+      >
+        {char}
+      </span>
+    ))
+  }
+</p>
+
+<style>
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    font-size: clamp(4rem, 2rem + 9vw, 9.5rem);
+    line-height: 1;
+    color: var(--md-sys-color-primary);
+    user-select: none;
+    margin-inline-start: -0.04em;
+  }
+
+  .letter {
+    display: inline-block;
+    font-size: calc(var(--size) * 1em);
+    font-weight: var(--wght);
+    font-stretch: var(--wdth);
+    font-variation-settings: 'ROND' var(--rond);
+    transition:
+      font-weight var(--spring-slow-spatial),
+      font-stretch var(--spring-slow-spatial),
+      font-variation-settings var(--spring-slow-spatial),
+      translate var(--spring-fast-spatial),
+      color var(--spring-default-effects);
+  }
+
+  .letter:hover {
+    font-weight: var(--h-wght);
+    font-stretch: var(--h-wdth);
+    font-variation-settings: 'ROND' var(--h-rond);
+    translate: 0 -0.06em;
+    color: var(--md-sys-color-tertiary);
+  }
+
+  /* Letters settle into their mix as the footer scrolls into view. */
+  @supports (animation-timeline: view()) {
+    :global(:root[data-motion='full']) .letter {
+      /* Longhands on purpose: the minifier folds a shorthand plus timeline into one invalid declaration. */
+      animation-name: settle;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i) * 6%) cover calc(25% + var(--i) * 3%);
+    }
+  }
+
+  @keyframes settle {
+    from {
+      font-weight: 200;
+      font-stretch: 25%;
+      translate: 0 0.15em;
+    }
+  }
+</style>
