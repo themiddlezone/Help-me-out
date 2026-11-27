@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CategoryCard from '../../components/CategoryCard.astro';
+import OtherFilesPill from '../../components/OtherFilesPill.astro';
+import SpecStrip from '../../components/SpecStrip.astro';
+import { categoryIds } from '../../lib/categories';
+import { getBuilds, getDevices, type Device } from '../../lib/data';
+
+export async function getStaticPaths() {
+  const devices = await getDevices();
+  return devices.map((device) => ({ params: { device: device.id }, props: { device } }));
+}
+
+interface Props {
+  device: Device;
+}
+
+const { device } = Astro.props;
+const { name, codename, brand, model, tagline } = device.data;
+const builds = await getBuilds(device.id);
+const chip = { id: device.id, name, codename };
+---
+
+<Base
+  title={name}
+  description={`${brand} ${name} (${model}) downloads: LineageOS, custom kernels and recoveries.`}
+  device={chip}
+  searchTitle={`${brand} ${name} (${codename})`}
+>
+  <section class="page intro">
+    <Breadcrumbs items={[{ label: 'Devices', href: '/' }, { label: name }]} />
+    <h1 class="display">{name}</h1>
+    <p class="lede">Choose what you want to download.</p>
+    <p class="note">{tagline}</p>
+  </section>
+
+  <section class="page stack" aria-label="Downloads">
+    <ul class="cards">
+      {
+        categoryIds.map((category, i) => {
+          const source = device.data.categories[category];
+          return (
+            <li class="rise" style={`--i: ${i}`}>
+              <CategoryCard
+                device={device.id}
+                category={category}
+                summary={source.summary}
+                count={builds.filter((build) => build.data.category === category).length}
+                available={Boolean(source.repo)}
+              />
+            </li>
+          );
+        })
+      }
+    </ul>
+    <div class="rise" style="--i: 3">
+      <OtherFilesPill device={device.id} />
+    </div>
+    <div class="rise" style="--i: 4">
+      <SpecStrip device={device} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 12px;
+    padding-block: clamp(1.5rem, 4vw, 2.5rem) clamp(2rem, 4vw, 2.5rem);
+  }
+
+  .intro h1 {
+    margin-block-start: 8px;
+  }
+
+  .note {
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.8;
+  }
+
+  .stack {
+    display: grid;
+    gap: 24px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cards > li {
+    display: grid;
+  }
+</style>

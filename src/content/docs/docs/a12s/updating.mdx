@@ -1,0 +1,49 @@
+---
+title: Updating
+description: Move to a newer LineageOS or kernel build on the Galaxy A12 (SM-A127F) without starting over.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+These builds are not published to LineageOS's update servers, so the **Updater** app in Settings will not find them.
+New releases show up on the [Changelog](../../../changelog/) and in the [Telegram channel](https://t.me/Varifocal).
+
+## Update LineageOS
+
+Moving between builds of the same LineageOS version normally keeps your apps and data.
+
+<Steps>
+
+1. Back up anything you cannot lose. Updates rarely go wrong, but it is cheap insurance.
+2. Download the new ROM zip from the [ROM downloads](../../../a12s/roms/) and check its SHA-256.
+3. Reboot to recovery: turn the phone off, then hold **Volume up** and **Power** with the cable plugged in.
+4. Choose **Apply update**, then **Apply from ADB**, and run:
+
+   ```sh
+   adb sideload lineage-23.2-<date>-UNOFFICIAL-varifocal-a12s-<build>.zip
+   ```
+
+5. Choose **Reboot system now**.
+
+</Steps>
+
+<Aside type="caution">
+  Read the release notes first. If a release says it needs a clean install, format data in recovery before sideloading,
+  exactly like the [first install](../install-lineageos/).
+</Aside>
+
+## Update the kernel
+
+Flash the newer `SukiSU-*.zip` in TWRP, the same way as the [first time](../flash-kernel/). There is no need to remove
+the old one first.
+
+<Aside type="tip" title="ROM updates replace the kernel">
+  The ROM zip writes its own boot image. If you use a custom kernel, flash it again after every ROM update.
+</Aside>
+
+## Get notified
+
+- Open the [Changelog](../../../changelog/) now and then. Every build lands there.
+- Join [t.me/Varifocal](https://t.me/Varifocal).
+- On GitHub, watch the [device repo](https://github.com/a12s-dev/android_device_samsung_a12s) and pick **Custom**, then
+  **Releases**.

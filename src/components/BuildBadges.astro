@@ -1,0 +1,36 @@
+---
+import Icon from './Icon.astro';
+
+/**
+ * GitHub pre-releases are shown as test builds, everything else is an
+ * official build. The newest official build also gets a "Latest" badge.
+ */
+interface Props {
+  prerelease: boolean;
+  latest?: boolean;
+}
+
+const { prerelease, latest } = Astro.props;
+---
+
+{
+  prerelease ? (
+    <span class="badge badge-test">
+      <Icon name="science" />
+      Test
+    </span>
+  ) : (
+    <span class="badge badge-official">
+      <Icon name="verified" />
+      Official
+    </span>
+  )
+}
+{
+  latest && (
+    <span class="badge badge-latest">
+      <Icon name="bolt" />
+      Latest
+    </span>
+  )
+}

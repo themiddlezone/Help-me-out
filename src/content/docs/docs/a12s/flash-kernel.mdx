@@ -1,0 +1,63 @@
+---
+title: Flash the SukiSU kernel
+description: Install a custom 4.19 kernel with SukiSU Ultra root on the Galaxy A12 (SM-A127F).
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+The kernel builds are Linux 4.19 with [SukiSU Ultra](https://github.com/SukiSU-Nova/SukiSU-Nova) built in, a
+KernelSU based root solution. Root lives in the kernel itself, so there is no patched boot image to manage.
+
+<Aside type="caution" title="Check what the kernel was built for">
+  Each kernel release lists the tree it was built from in its notes. The current ones come from the `android-14.0`
+  branch of the exynos850 kernel source used with Samsung's firmware. The LineageOS ROM already ships its own kernel,
+  so ask in the [Telegram channel](https://t.me/Varifocal) before you swap it out on LineageOS.
+</Aside>
+
+## What you need
+
+- An [unlocked bootloader](../unlock-bootloader/).
+- A custom recovery that can install zips, such as TWRP. Recovery downloads on this site are coming soon.
+- The kernel zip from the [kernel downloads](../../../a12s/kernels/), named like `SukiSU-r22-varifocal-<hash>.zip`.
+  Check its SHA-256 on the release page.
+
+## Install
+
+<Steps>
+
+1. Copy the zip to the phone's storage or a microSD card.
+2. Reboot to TWRP.
+3. Optional, but worth it: open **Backup**, tick **Boot** and swipe. This lets you go back in one step.
+4. Open **Install**, pick the `SukiSU-*.zip` and swipe to confirm.
+
+   The zip is an AnyKernel3 package. It writes the kernel into the boot partition, writes the stock image to the
+   `dtb` partition and prints the build credits.
+
+5. Choose **Reboot system**.
+
+</Steps>
+
+Once the phone is up, install the SukiSU Ultra manager app from the project's releases to grant root to apps.
+
+## The other files
+
+Each kernel release has two more files, for people who know they need them:
+
+- `boot_new.img` is a complete boot partition image, kernel, ramdisk and device tree, for writing directly with `dd`.
+- `dtb.img` is a dump of the stock `dtb` partition, in case you need to put it back.
+
+<Aside type="danger">
+  Writing partitions with `dd` skips every safety check. Double check the target partition before you press enter.
+</Aside>
+
+## Going back
+
+- Restore the **Boot** backup in TWRP, if you made one.
+- Or, from download mode, flash the boot image that matches your ROM. For LineageOS that is the `boot.img` from the
+  same ROM release:
+
+  ```sh
+  heimdall flash --BOOT boot.img
+  ```
+
+Installing a ROM update also replaces the kernel. See [Updating](../updating/).

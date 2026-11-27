@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Shape from '../components/Shape.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="Page not found">
+  <section class="page lost">
+    <div class="art" aria-hidden="true">
+      <Shape name="Ghostish" />
+      <span>404</span>
+    </div>
+    <h1 class="display">This page wandered off.</h1>
+    <p class="lede">The link may be old, or the build it pointed to has been replaced by a newer one.</p>
+    <div class="actions">
+      <a class="btn btn-filled btn-m" href={url('/')}>
+        <Icon name="home" />
+        Downloads
+      </a>
+      <a class="btn btn-outlined btn-m" href={url('/docs/')}>
+        <Icon name="menu_book" />
+        Guides
+      </a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+    padding-block: clamp(3rem, 10vw, 6rem) 0;
+    text-align: center;
+  }
+
+  .art {
+    display: grid;
+    place-items: center;
+    inline-size: 200px;
+    block-size: 200px;
+    margin-block-end: 8px;
+  }
+
+  .art > * {
+    grid-area: 1 / 1;
+  }
+
+  .art :global(.shape) {
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--md-sys-color-tertiary-container);
+    animation: bob 3.2s ease-in-out infinite alternate;
+  }
+
+  .art span {
+    font: var(--type-display-m);
+    font-weight: 800;
+    font-stretch: 125%;
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  @keyframes bob {
+    to {
+      translate: 0 -10px;
+      rotate: -4deg;
+    }
+  }
+
+  :global(:root[data-motion='lite']) .art :global(.shape) {
+    animation: none;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-block-start: 16px;
+  }
+</style>

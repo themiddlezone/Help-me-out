@@ -1,0 +1,82 @@
+/*
+ * Cross-document view transitions. Every page opts in, so links between pages
+ * animate without a client router. Shared elements carry a
+ * view-transition-name (see vtName() in src/lib/url.ts) and morph between
+ * their old and new positions on a spatial spring.
+ *
+ * Lite motion mode skips transitions from script, see MotionScript.astro.
+ */
+
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes vf-vt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vf-vt-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vf-vt-lift {
+  from {
+    translate: 0 24px;
+  }
+}
+
+::view-transition-group(*) {
+  animation-duration: var(--duration-default-spatial);
+  animation-timing-function: var(--ease-default-spatial);
+}
+
+::view-transition-old(root) {
+  animation: vf-vt-out var(--spring-fast-effects) both;
+}
+
+::view-transition-new(root) {
+  animation:
+    vf-vt-in var(--spring-default-effects) both,
+    vf-vt-lift var(--spring-default-spatial) both;
+}
+
+/* Elements that change shape between pages, like a card turning into a page
+   header. Their snapshots are stretched to the group so nothing pokes out. */
+::view-transition-group(*.morph) {
+  animation-duration: var(--duration-slow-spatial);
+  animation-timing-function: var(--ease-slow-spatial);
+  overflow: clip;
+}
+
+::view-transition-old(*.morph),
+::view-transition-new(*.morph) {
+  block-size: 100%;
+  object-fit: cover;
+  object-position: top left;
+}
+
+::view-transition-old(*.morph) {
+  animation: vf-vt-out var(--spring-default-effects) both;
+}
+
+::view-transition-new(*.morph) {
+  animation: vf-vt-in var(--spring-default-effects) both;
+}
+
+/* The selected pill in the floating toolbar slides to its new item. */
+::view-transition-group(toolbar-indicator),
+::view-transition-group(toolbar-current) {
+  animation-duration: var(--duration-default-spatial);
+  animation-timing-function: var(--ease-default-spatial);
+}
+
+::view-transition-old(toolbar-current),
+::view-transition-new(toolbar-current) {
+  block-size: 100%;
+  object-fit: none;
+  object-position: left center;
+}

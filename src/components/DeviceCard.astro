@@ -1,0 +1,104 @@
+---
+import DeviceArt from './DeviceArt.astro';
+import Icon from './Icon.astro';
+import type { Device } from '../lib/data';
+import { url, vtName } from '../lib/url';
+
+interface Props {
+  device: Device;
+}
+
+const { device } = Astro.props;
+const { name, codename, model } = device.data;
+---
+
+<a class="device-card state" href={url(`/${device.id}/`)}>
+  <div class="stage" style={`view-transition-name: ${vtName('device', device.id)}`}>
+    <DeviceArt />
+  </div>
+  <div class="meta">
+    <div>
+      <h2>{name}</h2>
+      <p>{codename} · {model}</p>
+    </div>
+    <span class="go" aria-hidden="true">
+      <Icon name="arrow_forward" />
+    </span>
+  </div>
+</a>
+
+<style>
+  .device-card {
+    display: grid;
+    gap: 20px;
+    block-size: 100%;
+    padding: 24px;
+    border-radius: var(--shape-xxl);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    transition:
+      border-radius var(--spring-default-spatial),
+      scale var(--spring-fast-spatial);
+  }
+
+  .device-card:hover {
+    border-radius: var(--shape-xl);
+  }
+
+  .device-card:active {
+    scale: 0.98;
+  }
+
+  .stage {
+    view-transition-class: morph;
+    aspect-ratio: 360 / 348;
+    border-radius: var(--shape-xl-plus);
+    overflow: hidden;
+    transition: border-radius var(--spring-slow-spatial);
+  }
+
+  .device-card:hover .stage {
+    border-radius: var(--shape-xxl);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  h2 {
+    font: var(--type-headline-s);
+    font-weight: 700;
+  }
+
+  p {
+    font: var(--type-label-l);
+    font-weight: 450;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .go {
+    display: grid;
+    place-items: center;
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: 28px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    flex-shrink: 0;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      translate var(--spring-fast-spatial);
+  }
+
+  .device-card:hover .go {
+    border-radius: var(--shape-l);
+    translate: 4px 0;
+  }
+
+  .device-card:active .go {
+    border-radius: var(--shape-m);
+  }
+</style>

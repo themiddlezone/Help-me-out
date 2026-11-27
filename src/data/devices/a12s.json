@@ -1,0 +1,24 @@
+{
+  "name": "Galaxy A12",
+  "brand": "Samsung",
+  "model": "SM-A127F",
+  "codename": "a12s",
+  "soc": "Exynos 850",
+  "order": 1,
+  "tagline": "Exynos 850 model only. The MediaTek SM-A125F is not supported.",
+  "guide": "/docs/a12s/before-you-flash/",
+  "source": "https://github.com/a12s-dev",
+  "categories": {
+    "roms": {
+      "repo": "a12s-dev/android_device_samsung_a12s",
+      "summary": "LineageOS 23.2, Android 16"
+    },
+    "recoveries": {
+      "summary": "Custom recovery images"
+    },
+    "kernels": {
+      "repo": "a12s-dev/android_kernel_samsung_exynos850",
+      "summary": "Linux 4.19 with SukiSU Ultra"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+---
+title: Before you flash
+description: What you need for the Galaxy A12 (SM-A127F), what you lose and how to back up first.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Flashing a custom ROM replaces the software Samsung shipped. It is reversible, but it wipes the phone along the way
+and a few things never come back. Read this page first.
+
+## Make sure it is the right phone
+
+These builds are for the **Samsung Galaxy A12 SM-A127F** only. That is the Exynos 850 model, codename `a12s`.
+
+<Steps>
+
+1. Open **Settings**, then **About phone**.
+2. Look at **Model number**. It should start with `SM-A127F`. A suffix like `/DSN` is fine.
+
+</Steps>
+
+<Aside type="danger">
+  If it says `SM-A125F` you have the MediaTek Galaxy A12. Nothing on this site supports it, and flashing these files on
+  it can leave it unable to boot.
+</Aside>
+
+## What you will need
+
+- A computer running Linux, macOS or Windows.
+- A USB cable that can carry data, not only charge.
+- [Android platform tools](https://developer.android.com/tools/releases/platform-tools) for `adb`.
+- [Heimdall](https://git.sr.ht/~grimler/Heimdall) to write images to the phone from download mode. On Windows, Odin
+  works too.
+- At least 50% battery.
+- About an hour, without rushing.
+
+## What you lose
+
+- **Everything on the phone.** Unlocking the bootloader and formatting data both wipe it.
+- **Knox.** Unlocking the bootloader trips Samsung's Knox warranty flag for good. Samsung Wallet, Secure Folder and
+  some Samsung Health features stop working, even if you go back to stock later.
+- **Some apps.** Apps that check device integrity, such as some banking and payment apps, may refuse to run on an
+  unlocked phone.
+
+<Aside type="caution" title="Encryption and SELinux">
+  Check the **SELinux** and **Userdata** rows in a release's notes before you pick it. Release 1 runs SELinux in
+  permissive mode and leaves user data unencrypted, which makes the phone less private if it is lost. Newer test builds
+  turn on encryption and enforcing mode.
+</Aside>
+
+## Back up
+
+Copy what you want to keep before you start:
+
+- Photos, videos and downloads: plug the phone into your computer and copy the folders off, or use a cloud backup.
+- Contacts, calendars and app data: let your Google account or Samsung account sync them.
+- Chats: most messaging apps have their own backup option in their settings. Run it.
+- Two-factor apps: move them to another device first. Losing these is the most painful part of a wipe.
+
+When that is done, move on to [unlocking the bootloader](../unlock-bootloader/).

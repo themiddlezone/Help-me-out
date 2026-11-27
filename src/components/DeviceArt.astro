@@ -1,0 +1,83 @@
+---
+import { shapePath } from '../lib/shapes';
+
+/**
+ * Stand-in device artwork: a phone outline over two Material shapes. The
+ * shapes drift and the phone tilts when the parent .device-card is hovered.
+ */
+---
+
+<svg class="art" viewBox="0 0 360 348" aria-hidden="true">
+  <rect class="bg" width="360" height="348"></rect>
+  <g class="sun">
+    <path d={shapePath('Cookie12Sided')} transform="translate(-60 -70) scale(200)"></path>
+  </g>
+  <g class="blob">
+    <circle cx="300" cy="360" r="240"></circle>
+  </g>
+  <g class="phone">
+    <rect x="114" y="34" width="132" height="278" rx="26" class="body"></rect>
+    <rect x="120" y="40" width="120" height="266" rx="20" class="screen"></rect>
+    <circle cx="180" cy="56" r="5" class="camera"></circle>
+  </g>
+</svg>
+
+<style>
+  .art {
+    inline-size: 100%;
+    block-size: 100%;
+    display: block;
+  }
+
+  .bg {
+    fill: var(--md-sys-color-primary-container);
+  }
+
+  .sun {
+    fill: var(--md-sys-color-tertiary);
+  }
+
+  .blob {
+    fill: var(--md-sys-color-primary);
+  }
+
+  .body {
+    fill: var(--md-sys-color-outline);
+  }
+
+  .screen {
+    fill: var(--md-sys-color-surface-container-highest);
+    stroke: var(--md-sys-color-surface-container-lowest);
+    stroke-width: 4;
+  }
+
+  .camera {
+    fill: var(--md-sys-color-surface-container-lowest);
+  }
+
+  .sun,
+  .blob,
+  .phone {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      rotate var(--spring-slow-spatial),
+      translate var(--spring-slow-spatial),
+      scale var(--spring-slow-spatial);
+  }
+
+  :global(.device-card:is(:hover, :focus-visible)) .sun {
+    rotate: 40deg;
+    scale: 1.12;
+  }
+
+  :global(.device-card:is(:hover, :focus-visible)) .blob {
+    translate: -10px -14px;
+    scale: 1.06;
+  }
+
+  :global(.device-card:is(:hover, :focus-visible)) .phone {
+    rotate: -6deg;
+    translate: 0 -6px;
+  }
+</style>

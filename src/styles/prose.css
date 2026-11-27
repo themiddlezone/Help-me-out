@@ -1,0 +1,144 @@
+/*
+ * Long-form text outside Starlight, used for release notes pulled from
+ * GitHub. Starlight pages style their own markdown.
+ */
+
+.prose {
+  font: var(--type-body-l);
+  color: var(--md-sys-color-on-surface-variant);
+  overflow-wrap: break-word;
+}
+
+.prose > * + * {
+  margin-block-start: 1rem;
+}
+
+.prose :is(h2, h3, h4) {
+  color: var(--md-sys-color-on-surface);
+  margin-block-start: 2rem;
+}
+
+.prose h2 {
+  font: var(--type-headline-s);
+  font-weight: 600;
+}
+
+.prose h3 {
+  font: var(--type-title-l);
+  font-weight: 600;
+}
+
+.prose h4 {
+  font: var(--type-title-m);
+}
+
+.prose strong {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 650;
+}
+
+.prose a {
+  color: var(--md-sys-color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose :is(ul, ol) {
+  padding-inline-start: 1.5rem;
+}
+
+.prose li + li {
+  margin-block-start: 0.25rem;
+}
+
+.prose li::marker {
+  color: var(--md-sys-color-primary);
+}
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.4em;
+  border-radius: var(--shape-xs);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  overflow-wrap: anywhere;
+}
+
+.prose pre {
+  padding: 1rem 1.25rem;
+  border-radius: var(--shape-l);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose blockquote {
+  padding: 1rem 1.25rem;
+  border-radius: var(--shape-l);
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.prose blockquote > * + * {
+  margin-block-start: 0.5rem;
+}
+
+.prose table {
+  display: block;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--shape-l);
+  background-color: var(--md-sys-color-surface-container-low);
+  font: var(--type-body-m);
+}
+
+.prose :is(th, td) {
+  padding: 0.625rem 1rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.prose tr + tr :is(th, td) {
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.prose th {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+
+.prose th:empty {
+  display: none;
+}
+
+.prose tr:has(> th:empty:only-child, > th:empty + th:empty) {
+  display: none;
+}
+
+.prose td:first-child {
+  color: var(--md-sys-color-on-surface);
+}
+
+.prose img {
+  display: inline-block;
+  border-radius: var(--shape-l);
+  height: auto;
+}
+
+.prose table img {
+  margin-inline: auto;
+}
+
+.prose hr {
+  border: 0;
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+}

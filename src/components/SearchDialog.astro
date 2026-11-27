@@ -1,0 +1,473 @@
+---
+import Icon from './Icon.astro';
+import LoadingIndicator from './LoadingIndicator.astro';
+
+/**
+ * Site search. Starlight builds a Pagefind index of the whole site after the
+ * build, this dialog queries it with the Pagefind JS API so results can
+ * match the rest of the UI. Opens with the button, "/" or Ctrl/Cmd+K.
+ */
+---
+
+<button
+  class="btn btn-icon btn-m btn-standard search-open"
+  type="button"
+  aria-label="Search"
+  aria-keyshortcuts="/ Control+K Meta+K"
+  aria-haspopup="dialog"
+  data-search-open
+>
+  <Icon name="search" />
+</button>
+
+<dialog class="search" aria-label="Search the site" data-search>
+  <form class="bar" method="dialog" role="search">
+    <Icon name="search" class="lead" />
+    <input
+      type="search"
+      name="q"
+      placeholder="Search builds, guides and FAQ"
+      autocomplete="off"
+      spellcheck="false"
+      enterkeyhint="go"
+      aria-label="Search"
+      data-search-input
+    />
+    <button class="btn btn-icon btn-s close" type="submit" value="close" aria-label="Close search">
+      <Icon name="close" />
+    </button>
+  </form>
+
+  <div class="body">
+    <div class="loading" data-search-loading hidden>
+      <LoadingIndicator label="Loading search" />
+      <p>Getting search ready</p>
+    </div>
+
+    <ul class="skeleton" data-search-skeleton hidden aria-hidden="true">
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+
+    <ol class="results" data-search-results></ol>
+
+    <p class="status" data-search-status aria-live="polite">
+      Try <kbd>LineageOS</kbd>, <kbd>kernel</kbd> or <kbd>bootloader</kbd>.
+    </p>
+  </div>
+</dialog>
+
+<script>
+  import { warmIndicators } from '../scripts/loading';
+
+  interface PagefindResult {
+    url: string;
+    excerpt: string;
+    meta: { title?: string };
+    sub_results?: { title: string; url: string; excerpt: string }[];
+  }
+
+  interface Pagefind {
+    options(options: Record<string, unknown>): Promise<void>;
+    init(): Promise<void>;
+    debouncedSearch(
+      query: string,
+      options?: Record<string, unknown>,
+      wait?: number,
+    ): Promise<{ results: { data(): Promise<PagefindResult> }[] } | null>;
+  }
+
+  const base = import.meta.env.BASE_URL;
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search]')!;
+  const input = dialog.querySelector<HTMLInputElement>('[data-search-input]')!;
+  const loading = dialog.querySelector<HTMLElement>('[data-search-loading]')!;
+  const skeleton = dialog.querySelector<HTMLElement>('[data-search-skeleton]')!;
+  const list = dialog.querySelector<HTMLOListElement>('[data-search-results]')!;
+  const status = dialog.querySelector<HTMLElement>('[data-search-status]')!;
+  const hint = status.innerHTML;
+
+  let pagefind: Promise<Pagefind> | undefined;
+
+  function loadPagefind(): Promise<Pagefind> {
+    pagefind ??= (async () => {
+      const bundle = `${base.replace(/\/$/, '')}/pagefind/pagefind.js`;
+      const module: Pagefind = await import(/* @vite-ignore */ bundle);
+      await module.options({ baseUrl: base });
+      await module.init();
+      return module;
+    })();
+    return pagefind;
+  }
+
+  /** Which part of the site a result is from, shown as a small label. */
+  function kind(url: string): string {
+    const path = url.slice(base.length - 1);
+    if (path.startsWith('/docs/')) return 'Guide';
+    if (path.startsWith('/faq/')) return 'FAQ';
+    if (path.startsWith('/changelog/')) return 'Changelog';
+    if (path.startsWith('/support/')) return 'Support';
+    return 'Download';
+  }
+
+  function render(results: PagefindResult[]) {
+    list.replaceChildren(
+      ...results.map((result, i) => {
+        const item = document.createElement('li');
+        item.style.setProperty('--i', String(i));
+
+        const link = document.createElement('a');
+        link.className = 'result state';
+        link.href = result.url;
+
+        const label = document.createElement('span');
+        label.className = 'kind';
+        label.textContent = kind(result.url);
+
+        const title = document.createElement('span');
+        title.className = 'title';
+        title.textContent = result.meta.title ?? result.url;
+
+        // Pagefind escapes page text and only adds <mark> around matches.
+        const excerpt = document.createElement('span');
+        excerpt.className = 'excerpt';
+        excerpt.innerHTML = result.sub_results?.[0]?.excerpt ?? result.excerpt;
+
+        link.append(label, title, excerpt);
+        item.append(link);
+        return item;
+      }),
+    );
+  }
+
+  let query = 0;
+
+  async function search() {
+    const text = input.value.trim();
+    const id = ++query;
+
+    if (!text) {
+      list.replaceChildren();
+      skeleton.hidden = true;
+      status.innerHTML = hint;
+      return;
+    }
+
+    skeleton.hidden = list.childElementCount > 0;
+    let engine: Pagefind;
+    try {
+      engine = await loadPagefind();
+    } catch {
+      skeleton.hidden = true;
+      status.textContent = 'Search is only available on the published site.';
+      return;
+    }
+
+    const found = await engine.debouncedSearch(text, {}, 150);
+    if (!found || id !== query) return;
+
+    const results = await Promise.all(found.results.slice(0, 8).map((result) => result.data()));
+    if (id !== query) return;
+
+    skeleton.hidden = true;
+    render(results);
+    status.textContent = results.length
+      ? `${found.results.length} result${found.results.length === 1 ? '' : 's'}`
+      : `Nothing found for "${text}".`;
+  }
+
+  async function open() {
+    if (dialog.open) return;
+    dialog.showModal();
+    input.select();
+
+    if (!pagefind) {
+      loading.hidden = false;
+      warmIndicators();
+      try {
+        await loadPagefind();
+      } catch {
+        // Reported when someone types, see search().
+      }
+      loading.hidden = true;
+    }
+  }
+
+  document.querySelectorAll('[data-search-open]').forEach((button) => button.addEventListener('click', open));
+  input.addEventListener('input', search);
+
+  // Enter jumps to the first result. Escape closes straight away instead of
+  // only clearing the field, which is what a search input does by default.
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      dialog.close();
+      return;
+    }
+    if (event.key !== 'Enter') return;
+    const first = list.querySelector<HTMLAnchorElement>('a');
+    if (first) {
+      event.preventDefault();
+      first.click();
+    }
+  });
+
+  // Clicking the backdrop closes the dialog.
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement;
+    const typing = target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+    if ((event.key === 'k' && (event.metaKey || event.ctrlKey)) || (event.key === '/' && !typing)) {
+      event.preventDefault();
+      open();
+    }
+  });
+</script>
+
+<style>
+  .search {
+    --gap: 12px;
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    block-size: 100%;
+    max-block-size: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    overflow: hidden;
+    flex-direction: column;
+    opacity: 0;
+    translate: 0 -24px;
+    scale: 0.96;
+    transform-origin: top right;
+    transition:
+      opacity var(--spring-default-effects),
+      translate var(--spring-default-spatial),
+      scale var(--spring-default-spatial),
+      border-radius var(--spring-default-spatial),
+      display var(--duration-default-effects) allow-discrete,
+      overlay var(--duration-default-effects) allow-discrete;
+  }
+
+  .search[open] {
+    display: flex;
+    opacity: 1;
+    translate: 0;
+    scale: 1;
+  }
+
+  @starting-style {
+    .search[open] {
+      opacity: 0;
+      translate: 0 -24px;
+      scale: 0.96;
+    }
+  }
+
+  .search::backdrop {
+    background-color: rgb(0 0 0 / 0);
+    transition:
+      background-color var(--spring-default-effects),
+      display var(--duration-default-effects) allow-discrete,
+      overlay var(--duration-default-effects) allow-discrete;
+  }
+
+  .search[open]::backdrop {
+    background-color: rgb(0 0 0 / 0.5);
+  }
+
+  @starting-style {
+    .search[open]::backdrop {
+      background-color: rgb(0 0 0 / 0);
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .search {
+      inset: 10vh 0 auto;
+      margin-inline: auto;
+      inline-size: min(40rem, 100% - 32px);
+      block-size: auto;
+      max-block-size: 80vh;
+      border-radius: var(--shape-xl);
+      box-shadow: var(--elevation-3);
+    }
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    block-size: 72px;
+    padding-inline: 20px 12px;
+    border-block-end: 1px solid var(--md-sys-color-outline-variant);
+    flex-shrink: 0;
+  }
+
+  .bar .lead {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  input {
+    flex: 1;
+    min-inline-size: 0;
+    block-size: 100%;
+    padding-inline: 12px;
+    border: 0;
+    background: none;
+    font: var(--type-body-l);
+    font-size: 1.125rem;
+    outline: none;
+  }
+
+  input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .close {
+    --btn-fg: var(--md-sys-color-on-surface-variant);
+  }
+
+  .body {
+    overflow-y: auto;
+    padding: 8px 8px 16px;
+    overscroll-behavior: contain;
+  }
+
+  .loading {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding-block: 32px;
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .loading[hidden],
+  .skeleton[hidden] {
+    display: none;
+  }
+
+  .results,
+  .skeleton {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .skeleton li {
+    block-size: 88px;
+    border-radius: var(--shape-l);
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent) 50%,
+        transparent 100%
+      )
+      0 0 / 200% 100% no-repeat,
+      var(--md-sys-color-surface-container-highest);
+    animation: shimmer 1.2s linear infinite;
+  }
+
+  .skeleton li:first-child {
+    border-start-start-radius: var(--shape-xl);
+    border-start-end-radius: var(--shape-xl);
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 150% 0, 0 0;
+    }
+    to {
+      background-position: -50% 0, 0 0;
+    }
+  }
+
+  .results :global(li) {
+    animation:
+      vf-rise var(--spring-fast-spatial) both,
+      vf-fade var(--spring-fast-effects) both;
+    animation-delay: calc(var(--i) * 20ms);
+  }
+
+  .results :global(.result) {
+    display: grid;
+    gap: 2px;
+    padding: 14px 16px;
+    border-radius: var(--shape-s);
+    background-color: var(--md-sys-color-surface-container-highest);
+    transition: border-radius var(--spring-fast-spatial);
+  }
+
+  .results :global(li:first-child .result) {
+    border-start-start-radius: var(--shape-xl);
+    border-start-end-radius: var(--shape-xl);
+  }
+
+  .results :global(li:last-child .result) {
+    border-end-start-radius: var(--shape-xl);
+    border-end-end-radius: var(--shape-xl);
+  }
+
+  .results :global(.result:hover),
+  .results :global(.result:focus-visible) {
+    border-radius: var(--shape-xl);
+  }
+
+  .results :global(.kind) {
+    font: var(--type-label-m);
+    color: var(--md-sys-color-primary);
+  }
+
+  .results :global(.title) {
+    font: var(--type-title-m);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .results :global(.excerpt) {
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .results :global(mark) {
+    background: none;
+    color: var(--md-sys-color-primary);
+    font-weight: 700;
+  }
+
+  .status {
+    padding: 16px 12px 4px;
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    text-align: center;
+  }
+
+  .status :global(kbd) {
+    font: var(--type-label-m);
+    padding: 2px 8px;
+    border-radius: var(--shape-full);
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  :global(:root[data-motion='lite']) .results :global(li) {
+    animation: none;
+  }
+</style>

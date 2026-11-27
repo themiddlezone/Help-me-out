@@ -1,0 +1,78 @@
+---
+import Icon from './Icon.astro';
+import type { Device } from '../lib/data';
+import { url } from '../lib/url';
+
+interface Props {
+  device: Device;
+}
+
+const { codename, model, soc, guide } = Astro.props.device.data;
+---
+
+<dl class="spec-strip">
+  <div>
+    <dt>Codename</dt>
+    <dd>{codename}</dd>
+  </div>
+  <div>
+    <dt>Model</dt>
+    <dd>{model}</dd>
+  </div>
+  <div>
+    <dt>SoC</dt>
+    <dd>{soc}</dd>
+  </div>
+  <div class="guides">
+    <dt>Guides</dt>
+    <dd>
+      <a href={url(guide)}>
+        Install and unlock docs
+        <Icon name="arrow_outward" />
+      </a>
+    </dd>
+  </div>
+</dl>
+
+<style>
+  .spec-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px clamp(2rem, 5vw, 4rem);
+    margin: 0;
+    padding: 28px 32px;
+    border-radius: var(--shape-xl-plus);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+
+  dt {
+    font: var(--type-label-m);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font: var(--type-title-l);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: var(--shape-xs);
+    --icon-size: 20px;
+  }
+
+  a:hover {
+    color: var(--md-sys-color-primary);
+  }
+
+  a :global(.icon) {
+    transition: translate var(--spring-fast-spatial);
+  }
+
+  a:hover :global(.icon) {
+    translate: 2px -2px;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import LoadingIndicator from './LoadingIndicator.astro';
+
+/**
+ * Shows a contained loading indicator under the top bar when following a
+ * link takes longer than 300ms. Fast navigations never see it.
+ */
+---
+
+<div class="nav-loader" data-nav-loader hidden>
+  <LoadingIndicator contained label="Loading page" />
+</div>
+
+<script>
+  const loader = document.querySelector<HTMLElement>('[data-nav-loader]');
+  let timer = 0;
+
+  const hide = () => {
+    clearTimeout(timer);
+    if (loader) loader.hidden = true;
+  };
+
+  document.addEventListener('click', (event) => {
+    if (!loader || event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const link = (event.target as Element).closest('a');
+    if (!link || link.target || link.hasAttribute('download')) return;
+
+    const to = new URL(link.href, location.href);
+    if (to.origin !== location.origin) return;
+    if (to.pathname === location.pathname && to.search === location.search) return;
+
+    clearTimeout(timer);
+    timer = window.setTimeout(() => (loader.hidden = false), 300);
+  });
+
+  // Coming back through the back/forward cache restores the old page as it
+  // was, loader included.
+  addEventListener('pageshow', hide);
+  addEventListener('pagehide', hide);
+</script>
+
+<style>
+  .nav-loader {
+    position: fixed;
+    inset-block-start: calc(var(--top-bar-height) + 12px);
+    inset-inline: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    animation: pop var(--spring-fast-spatial) both;
+  }
+
+  .nav-loader[hidden] {
+    display: none;
+  }
+
+  .nav-loader :global(.loading-indicator) {
+    box-shadow: var(--elevation-3);
+  }
+
+  @keyframes pop {
+    from {
+      scale: 0.4;
+      opacity: 0;
+    }
+  }
+</style>

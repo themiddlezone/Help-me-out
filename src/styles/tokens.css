@@ -1,0 +1,107 @@
+/*
+ * Design tokens. Material 3 naming so the values line up with the spec and
+ * the Figma file.
+ *
+ * Colour roles are the dark Tonal Spot scheme for seed #8F3541, generated with
+ * @material/material-color-utilities 0.4.0 (contrast 0). The site is dark only.
+ *
+ * Spring tokens are not in here, they are computed at build time from
+ * src/lib/motion.ts and inlined by SharedHead.astro.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Colour */
+  --md-sys-color-background: #1a1112;
+  --md-sys-color-on-background: #f0dedf;
+  --md-sys-color-surface: #1a1112;
+  --md-sys-color-surface-dim: #1a1112;
+  --md-sys-color-surface-bright: #413737;
+  --md-sys-color-surface-container-lowest: #140c0d;
+  --md-sys-color-surface-container-low: #22191a;
+  --md-sys-color-surface-container: #271d1e;
+  --md-sys-color-surface-container-high: #312828;
+  --md-sys-color-surface-container-highest: #3d3233;
+  --md-sys-color-on-surface: #f0dedf;
+  --md-sys-color-on-surface-variant: #d7c1c2;
+  --md-sys-color-outline: #9f8c8d;
+  --md-sys-color-outline-variant: #524344;
+  --md-sys-color-inverse-surface: #f0dedf;
+  --md-sys-color-inverse-on-surface: #382e2e;
+  --md-sys-color-inverse-primary: #8f4a50;
+  --md-sys-color-primary: #ffb2b8;
+  --md-sys-color-on-primary: #561d24;
+  --md-sys-color-primary-container: #72333a;
+  --md-sys-color-on-primary-container: #ffdadb;
+  --md-sys-color-primary-fixed: #ffdadb;
+  --md-sys-color-primary-fixed-dim: #ffb2b8;
+  --md-sys-color-secondary: #e6bdbe;
+  --md-sys-color-on-secondary: #44292b;
+  --md-sys-color-secondary-container: #5c3f41;
+  --md-sys-color-on-secondary-container: #ffdadb;
+  --md-sys-color-tertiary: #e7c08e;
+  --md-sys-color-on-tertiary: #432c06;
+  --md-sys-color-tertiary-container: #5d421b;
+  --md-sys-color-on-tertiary-container: #ffddb4;
+  --md-sys-color-tertiary-fixed: #ffddb4;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+
+  /* Type */
+  --font-sans: 'Google Sans Flex', 'Roboto Flex', system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas,
+    monospace;
+
+  /* size / line-height / weight / tracking, emphasized styles add weight */
+  --type-display-l: 400 3.5625rem / 4rem var(--font-sans);
+  --type-display-m: 400 2.8125rem / 3.25rem var(--font-sans);
+  --type-display-s: 400 2.25rem / 2.75rem var(--font-sans);
+  --type-headline-l: 400 2rem / 2.5rem var(--font-sans);
+  --type-headline-m: 400 1.75rem / 2.25rem var(--font-sans);
+  --type-headline-s: 400 1.5rem / 2rem var(--font-sans);
+  --type-title-l: 400 1.375rem / 1.75rem var(--font-sans);
+  --type-title-m: 500 1rem / 1.5rem var(--font-sans);
+  --type-title-s: 500 0.875rem / 1.25rem var(--font-sans);
+  --type-body-l: 400 1rem / 1.5rem var(--font-sans);
+  --type-body-m: 400 0.875rem / 1.25rem var(--font-sans);
+  --type-body-s: 400 0.75rem / 1rem var(--font-sans);
+  --type-label-l: 500 0.875rem / 1.25rem var(--font-sans);
+  --type-label-m: 500 0.75rem / 1rem var(--font-sans);
+  --type-label-s: 500 0.6875rem / 1rem var(--font-sans);
+
+  /* Shape, the M3 corner scale */
+  --shape-none: 0;
+  --shape-xs: 4px;
+  --shape-s: 8px;
+  --shape-m: 12px;
+  --shape-l: 16px;
+  --shape-l-plus: 20px;
+  --shape-xl: 28px;
+  --shape-xl-plus: 32px;
+  --shape-xxl: 48px;
+  --shape-full: 9999px;
+
+  /* Elevation, dark theme uses shadow only (surface tint is gone in M3E) */
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --elevation-2: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --elevation-3: 0 4px 8px 3px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+  --elevation-4: 0 6px 10px 4px rgb(0 0 0 / 0.15), 0 2px 3px rgb(0 0 0 / 0.3);
+
+  /* State layer opacities */
+  --state-hover: 0.08;
+  --state-focus: 0.1;
+  --state-pressed: 0.1;
+  --state-dragged: 0.16;
+
+  /* Layout */
+  --page-max: 75rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --top-bar-height: 4.5rem;
+  --toolbar-height: 4rem;
+}

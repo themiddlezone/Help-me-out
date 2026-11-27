@@ -1,0 +1,42 @@
+---
+title: Support
+description: Where to ask for help, how to report a bug and how to help the project.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Get help
+
+Most answers are already in the [FAQ](../faq/) and the [guides](../docs/). If you are still stuck, ask.
+
+<CardGrid>
+  <LinkCard title="Telegram" description="The quickest way to reach us and other users. t.me/Varifocal" href="https://t.me/Varifocal" />
+  <LinkCard title="GitHub" description="Source code and releases. github.com/varifocal" href="https://github.com/varifocal" />
+  <LinkCard title="Email" description="For anything that does not fit a chat. varifocall@gmail.com" href="mailto:varifocall@gmail.com" />
+  <LinkCard title="Project on GitHub" description="Device, kernel and vendor trees. github.com/a12s-dev" href="https://github.com/a12s-dev" />
+</CardGrid>
+
+## Report a bug
+
+A good report gets fixed much faster. Include:
+
+- **Your model number**, from Settings, About phone.
+- **The exact build**, for example `Release 1 (rom38)` or the kernel version.
+- **What you did, what you expected and what happened.** Steps to make it happen again are gold.
+- **Logs**, if you can get them. With USB debugging on, run these on your computer right after the problem shows up:
+
+  ```sh
+  adb logcat -d > logcat.txt
+  adb shell dmesg > dmesg.txt
+  ```
+
+  `dmesg` needs root on most builds. Send the `logcat.txt` anyway if it does not work.
+
+Check the **Known issues** in the release notes first, your bug might already be on the list.
+
+## Help the project
+
+- **Try the test builds** and report what breaks.
+- **Share the site** with other Galaxy A12 owners.
+- **Fix something.** The guides on this site can be edited on GitHub, and the build trees live under
+  [a12s-dev](https://github.com/a12s-dev).

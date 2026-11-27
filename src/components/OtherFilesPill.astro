@@ -1,0 +1,91 @@
+---
+import Icon from './Icon.astro';
+import { url, vtName } from '../lib/url';
+
+interface Props {
+  device: string;
+}
+
+const { device } = Astro.props;
+---
+
+<a
+  class="other-files state"
+  href={url(`/${device}/other/`)}
+  style={`view-transition-name: ${vtName('other', device)}`}
+>
+  <span class="lead" aria-hidden="true">
+    <Icon name="folder" fill />
+  </span>
+  <span class="text">
+    <span class="title">Other files</span>
+    <span class="sub">Firmware, tools and extras</span>
+  </span>
+  <Icon name="arrow_forward" class="arrow" />
+</a>
+
+<style>
+  .other-files {
+    view-transition-class: morph;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-block-size: 88px;
+    padding: 12px 28px 12px 12px;
+    border-radius: var(--shape-full);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    transition:
+      border-radius var(--spring-default-spatial),
+      scale var(--spring-fast-spatial);
+  }
+
+  .other-files:active {
+    border-radius: var(--shape-xl);
+    scale: 0.99;
+  }
+
+  .lead {
+    display: grid;
+    place-items: center;
+    inline-size: 64px;
+    block-size: 64px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-primary);
+    flex-shrink: 0;
+    --icon-size: 28px;
+    transition:
+      border-radius var(--spring-fast-spatial),
+      rotate var(--spring-fast-spatial);
+  }
+
+  .other-files:hover .lead {
+    border-radius: var(--shape-l);
+    rotate: -8deg;
+  }
+
+  .text {
+    display: grid;
+    flex: 1;
+  }
+
+  .title {
+    font: var(--type-title-l);
+    font-weight: 600;
+  }
+
+  .sub {
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .arrow {
+    color: var(--md-sys-color-on-surface-variant);
+    transition: translate var(--spring-fast-spatial);
+  }
+
+  .other-files:hover .arrow {
+    translate: 4px 0;
+  }
+</style>

@@ -1,0 +1,90 @@
+---
+import Base from '../layouts/Base.astro';
+import DeviceCard from '../components/DeviceCard.astro';
+import Icon from '../components/Icon.astro';
+import { getDevices } from '../lib/data';
+import { site, socials } from '../lib/site';
+
+const devices = await getDevices();
+const telegram = socials.find((social) => social.icon === 'telegram')!;
+---
+
+<Base searchTitle="Downloads">
+  <section class="page intro">
+    <p class="eyebrow">{site.tagline}</p>
+    <h1 class="display">Pick your device.</h1>
+    <p class="lede">Builds, install guides and changelogs in one place. Every file comes with its SHA-256 checksum.</p>
+  </section>
+
+  <section class="page" aria-label="Devices">
+    <ul class="grid">
+      {
+        devices.map((device, i) => (
+          <li class="rise" style={`--i: ${i}`}>
+            <DeviceCard device={device} />
+          </li>
+        ))
+      }
+      <li class="rise" style={`--i: ${devices.length}`}>
+        <div class="soon">
+          <a class="btn btn-icon btn-m btn-standard" href={telegram.href} aria-label="Suggest a device on Telegram">
+            <Icon name="add" />
+          </a>
+          <p class="soon-title">More devices soon</p>
+          <p class="soon-text">Want your phone here? Say hi on Telegram.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 16px;
+    padding-block: clamp(2rem, 6vw, 4rem) clamp(2rem, 4vw, 2.5rem);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 64rem) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .soon {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 8px;
+    block-size: 100%;
+    min-block-size: 16rem;
+    padding: 32px;
+    border: 2px dashed var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-xxl);
+    text-align: center;
+  }
+
+  .soon .btn {
+    margin-block-end: 8px;
+  }
+
+  .soon-title {
+    font: var(--type-title-m);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .soon-text {
+    font: var(--type-body-m);
+    color: var(--md-sys-color-on-surface-variant);
+    max-inline-size: 22ch;
+  }
+</style>
