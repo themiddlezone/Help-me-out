@@ -1,0 +1,13 @@
+/*
+ * Entry point for every page, Starlight or not. The layer statement comes
+ * first so our element defaults rank below Starlight's layers, while
+ * unlayered component styles still win over both.
+ */
+@layer vf-base, starlight;
+
+@import './tokens.css';
+@import './fonts.css';
+@import './base.css';
+@import './components.css';
+@import './prose.css';
+@import './transitions.css';
