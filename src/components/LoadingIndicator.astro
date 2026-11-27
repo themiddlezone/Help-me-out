@@ -1,0 +1,81 @@
+---
+import { shapePath } from '../lib/shapes';
+
+/**
+ * M3 Expressive loading indicator: a shape that keeps morphing through the
+ * Material shape sequence while it spins. The first shape is drawn at build
+ * time so something shows straight away, the morphing starts once
+ * src/scripts/loading.ts has pulled in the shape library.
+ */
+interface Props {
+  /** Put the shape on a circular container, for use on top of content. */
+  contained?: boolean;
+  class?: string;
+  label?: string;
+}
+
+const { contained = false, class: className, label = 'Loading' } = Astro.props;
+---
+
+<div
+  class:list={['loading-indicator', { contained }, className]}
+  role="progressbar"
+  aria-label={label}
+  data-loading-indicator
+>
+  <svg viewBox="0 0 1 1" aria-hidden="true">
+    <path d={shapePath('SoftBurst')}></path>
+  </svg>
+</div>
+
+<script>
+  import { startIndicators } from '../scripts/loading';
+  startIndicators();
+</script>
+
+<style>
+  .loading-indicator {
+    --size: 48px;
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--size);
+    block-size: var(--size);
+    border-radius: 50%;
+    color: var(--md-sys-color-primary);
+  }
+
+  .contained {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  svg {
+    inline-size: calc(var(--size) * 38 / 48);
+    block-size: calc(var(--size) * 38 / 48);
+    overflow: visible;
+    fill: currentColor;
+    animation: spin 4666ms linear infinite;
+  }
+
+  .contained svg {
+    inline-size: calc(var(--size) * 28 / 48);
+    block-size: calc(var(--size) * 28 / 48);
+  }
+
+  /* Once the script runs it takes over the rotation as well. */
+  .loading-indicator[data-live] svg {
+    animation: none;
+  }
+
+  @keyframes spin {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    svg {
+      animation-duration: 12s;
+    }
+  }
+</style>
