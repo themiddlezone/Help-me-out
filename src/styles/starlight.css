@@ -1,0 +1,306 @@
+/*
+ * Starlight theme. Maps Starlight's --sl-* custom properties onto the
+ * Material roles from tokens.css and restyles the few docs pieces whose
+ * shape does not come from tokens (sidebar, pagination, asides).
+ *
+ * Rules here are unlayered, so they win over Starlight's layered defaults
+ * without needing extra specificity.
+ */
+
+:root,
+::backdrop {
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+
+  --sl-color-white: var(--md-sys-color-on-surface);
+  --sl-color-gray-1: var(--md-sys-color-on-surface);
+  --sl-color-gray-2: var(--md-sys-color-on-surface-variant);
+  --sl-color-gray-3: var(--md-sys-color-outline);
+  --sl-color-gray-4: var(--md-sys-color-outline-variant);
+  --sl-color-gray-5: var(--md-sys-color-surface-container-highest);
+  --sl-color-gray-6: var(--md-sys-color-surface-container);
+  --sl-color-black: var(--md-sys-color-background);
+
+  --sl-color-accent-low: var(--md-sys-color-primary-container);
+  --sl-color-accent: var(--md-sys-color-inverse-primary);
+  --sl-color-accent-high: var(--md-sys-color-primary);
+
+  --sl-color-orange-low: var(--md-sys-color-tertiary-container);
+  --sl-color-orange: var(--md-sys-color-tertiary);
+  --sl-color-orange-high: var(--md-sys-color-on-tertiary-container);
+  --sl-color-purple-low: var(--md-sys-color-secondary-container);
+  --sl-color-purple: var(--md-sys-color-secondary);
+  --sl-color-purple-high: var(--md-sys-color-on-secondary-container);
+  --sl-color-blue-low: var(--md-sys-color-surface-container-highest);
+  --sl-color-blue: var(--md-sys-color-on-surface-variant);
+  --sl-color-blue-high: var(--md-sys-color-on-surface);
+  --sl-color-red-low: var(--md-sys-color-error-container);
+  --sl-color-red: var(--md-sys-color-error);
+  --sl-color-red-high: var(--md-sys-color-on-error-container);
+
+  --sl-color-text: var(--md-sys-color-on-surface-variant);
+  --sl-color-text-accent: var(--md-sys-color-primary);
+  --sl-color-text-invert: var(--md-sys-color-on-primary);
+  --sl-color-bg: var(--md-sys-color-background);
+  --sl-color-bg-nav: var(--md-sys-color-background);
+  --sl-color-bg-sidebar: var(--md-sys-color-background);
+  --sl-color-bg-inline-code: var(--md-sys-color-surface-container-highest);
+  --sl-color-bg-accent: var(--md-sys-color-primary);
+  --sl-color-hairline-light: var(--md-sys-color-outline-variant);
+  --sl-color-hairline: var(--md-sys-color-surface-container-high);
+  --sl-color-hairline-shade: transparent;
+  --sl-color-backdrop-overlay: rgb(0 0 0 / 0.55);
+
+  --sl-shadow-sm: var(--elevation-1);
+  --sl-shadow-md: var(--elevation-2);
+  --sl-shadow-lg: var(--elevation-3);
+
+  --sl-line-height: 1.7;
+  --sl-line-height-headings: 1.2;
+  --sl-text-h1: 2.25rem;
+  --sl-text-h2: 1.75rem;
+  --sl-text-h3: 1.375rem;
+  --sl-text-h4: 1.125rem;
+
+  --sl-nav-height: var(--top-bar-height);
+  --sl-nav-pad-y: 0px;
+  --sl-nav-pad-x: 1rem;
+  --sl-menu-button-size: 3.5rem;
+  --sl-sidebar-width: 18rem;
+  --sl-sidebar-pad-x: 1rem;
+  --sl-content-width: 46rem;
+}
+
+@media (min-width: 50rem) {
+  :root {
+    --sl-nav-pad-x: 1.5rem;
+  }
+}
+
+/* The header lifts onto a container colour once content scrolls under it. */
+@supports (animation-timeline: scroll()) {
+  .page > .header {
+    /* Longhands on purpose: the minifier folds a shorthand plus timeline into one invalid declaration. */
+    animation-name: vf-header-lift;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll();
+    animation-range: 0 64px;
+  }
+}
+
+@keyframes vf-header-lift {
+  to {
+    background-color: var(--md-sys-color-surface-container);
+  }
+}
+
+/* Leave room for the floating toolbar under the last bit of content. */
+.sidebar-content {
+  padding-block-end: calc(var(--toolbar-height) + 2rem);
+}
+
+/* Mobile menu button, as a tonal icon button. */
+.sl-menu-button {
+  top: calc((var(--sl-nav-height) - var(--sl-menu-button-size)) / 2);
+  align-items: center;
+  justify-content: center;
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: none;
+  transition: border-radius var(--spring-fast-spatial), background-color var(--spring-default-effects);
+}
+
+.sl-menu-button svg {
+  inline-size: 24px;
+  block-size: 24px;
+}
+
+.sl-menu-button:has(~ :popover-open) {
+  border-radius: var(--shape-m);
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* Sidebar ------------------------------------------------------------------ */
+
+.sidebar-content ul ul li {
+  border-inline-start: 0;
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+}
+
+.sidebar-content summary {
+  padding-block: 0.5rem;
+  border-radius: var(--shape-full);
+}
+
+.sidebar-content summary .large {
+  font: var(--type-title-s);
+  color: var(--md-sys-color-on-surface);
+}
+
+.sidebar-content a {
+  position: relative;
+  isolation: isolate;
+  padding: 0.5rem 1rem;
+  border-radius: var(--shape-full);
+  font: var(--type-label-l);
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  transition:
+    background-color var(--spring-default-effects),
+    color var(--spring-default-effects),
+    border-radius var(--spring-fast-spatial);
+}
+
+.sidebar-content a.large {
+  font: var(--type-title-s);
+}
+
+.sidebar-content a:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+  color: var(--md-sys-color-on-surface);
+}
+
+.sidebar-content a:active {
+  border-radius: var(--shape-m);
+}
+
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 700;
+}
+
+.sidebar-content ul li + li {
+  margin-block-start: 2px;
+}
+
+/* Content ------------------------------------------------------------------ */
+
+h1#_top {
+  font: var(--type-display-s);
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.sl-markdown-content :is(h2, h3, h4, h5) {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-thickness: 2px;
+}
+
+.sl-markdown-content :not(pre) > code:not(:where(.not-content *)) {
+  border-radius: var(--shape-xs);
+  padding: 0.1em 0.35em;
+}
+
+.sl-markdown-content :is(table):not(:where(.not-content *)) {
+  border-radius: var(--shape-l);
+  background-color: var(--md-sys-color-surface-container-low);
+  overflow: hidden;
+}
+
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  border-bottom-color: var(--md-sys-color-outline-variant);
+}
+
+.starlight-aside {
+  border: 0;
+  border-radius: var(--shape-l);
+  padding: 1rem 1.25rem;
+  background-color: var(--sl-color-asides-border);
+  color: var(--sl-color-asides-text-accent);
+}
+
+.starlight-aside .starlight-aside__content {
+  color: inherit;
+}
+
+.starlight-aside--note {
+  --sl-color-asides-border: var(--md-sys-color-surface-container-high);
+  --sl-color-asides-text-accent: var(--md-sys-color-on-surface);
+}
+
+.starlight-aside--tip {
+  --sl-color-asides-border: var(--md-sys-color-secondary-container);
+  --sl-color-asides-text-accent: var(--md-sys-color-on-secondary-container);
+}
+
+.starlight-aside--caution {
+  --sl-color-asides-border: var(--md-sys-color-tertiary-container);
+  --sl-color-asides-text-accent: var(--md-sys-color-on-tertiary-container);
+}
+
+.starlight-aside--danger {
+  --sl-color-asides-border: var(--md-sys-color-error-container);
+  --sl-color-asides-text-accent: var(--md-sys-color-on-error-container);
+}
+
+.starlight-aside .starlight-aside__content a {
+  color: inherit;
+}
+
+/* Steps from @astrojs/starlight/components */
+.sl-steps > li::before {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border: 0;
+  font-weight: 700;
+}
+
+.sl-steps > li::after {
+  background-color: var(--md-sys-color-outline-variant);
+}
+
+/* Previous and next links */
+.pagination-links a {
+  border: 0;
+  border-radius: var(--shape-xl);
+  background-color: var(--md-sys-color-surface-container-low);
+  box-shadow: none;
+  padding: 1rem 1.25rem;
+  transition:
+    background-color var(--spring-default-effects),
+    border-radius var(--spring-fast-spatial);
+}
+
+.pagination-links a:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--shape-xxl);
+}
+
+.pagination-links a:active {
+  border-radius: var(--shape-l);
+}
+
+/* Right hand table of contents */
+starlight-toc a[aria-current='true'],
+mobile-starlight-toc a[aria-current='true'] {
+  color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+
+mobile-starlight-toc nav,
+mobile-starlight-toc details {
+  background-color: var(--md-sys-color-surface-container);
+  border-color: transparent;
+}
+
+/* The docs footer bits (edit link, last updated) */
+.meta {
+  color: var(--md-sys-color-on-surface-variant);
+}

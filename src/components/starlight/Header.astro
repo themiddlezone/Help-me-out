@@ -1,0 +1,12 @@
+---
+import TopBar from '../TopBar.astro';
+import { getDevices } from '../../lib/data';
+
+// Guides for a device carry its chip, like the download pages do.
+const { id } = Astro.locals.starlightRoute;
+const devices = await getDevices();
+const match = devices.find((device) => id.startsWith(`docs/${device.id}/`));
+const device = match && { id: match.id, name: match.data.name, codename: match.data.codename };
+---
+
+<TopBar device={device} />

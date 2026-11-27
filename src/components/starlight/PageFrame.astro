@@ -1,0 +1,19 @@
+---
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+import FloatingToolbar from '../FloatingToolbar.astro';
+import NavLoader from '../NavLoader.astro';
+import SiteFooter from '../SiteFooter.astro';
+import { sectionFor } from '../../lib/site';
+import { stripBase } from '../../lib/url';
+
+const section = sectionFor(stripBase(Astro.url.pathname));
+---
+
+<Default>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+  <SiteFooter />
+</Default>
+<FloatingToolbar current={section} />
+<NavLoader />

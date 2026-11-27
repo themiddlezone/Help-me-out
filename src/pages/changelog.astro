@@ -1,0 +1,153 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import BuildBadges from '../components/BuildBadges.astro';
+import { categories } from '../lib/categories';
+import { buildPath, getBuilds, getDevices } from '../lib/data';
+import { formatDate } from '../lib/format';
+import { url } from '../lib/url';
+
+// Every published build across devices, newest first, grouped by month.
+const [builds, devices] = await Promise.all([getBuilds(), getDevices()]);
+const deviceName = new Map(devices.map((device) => [device.id, device.data.name]));
+const month = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const groups = new Map<string, typeof builds>();
+for (const build of builds) {
+  const key = month.format(build.data.publishedAt);
+  groups.set(key, [...(groups.get(key) ?? []), build]);
+}
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Changelog',
+    description: 'Every ROM, recovery and kernel release, newest first.',
+    tableOfContents: false,
+  }}
+>
+  <p>
+    Every build published for every device, newest first. Open one for its full release notes, files and checksums.
+  </p>
+
+  <div class="not-content timeline">
+    {
+      [...groups].map(([label, entries]) => (
+        <section>
+          <h2>{label}</h2>
+          <ol>
+            {entries.map((build) => (
+              <li>
+                <a class="entry" href={url(buildPath(build))}>
+                  <span class="when">{formatDate(build.data.publishedAt)}</span>
+                  <span class="what">
+                    <span class="title">{build.data.title}</span>
+                    {build.data.subtitle && <span class="sub">{build.data.subtitle}</span>}
+                    <span class="tags">
+                      <BuildBadges prerelease={build.data.prerelease} />
+                      <span class="where">
+                        {categories[build.data.category].singular} for {deviceName.get(build.data.device)}
+                      </span>
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</StarlightPage>
+
+<style>
+  .timeline {
+    display: grid;
+    gap: 2.5rem;
+    margin-block-start: 2rem;
+  }
+
+  h2 {
+    margin-block-end: 1rem;
+    font: var(--type-title-l);
+    font-weight: 650;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  ol {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: var(--shape-s);
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+    text-decoration: none;
+    transition:
+      border-radius var(--spring-default-spatial),
+      background-color var(--spring-default-effects);
+  }
+
+  li:first-child .entry {
+    border-start-start-radius: var(--shape-xl);
+    border-start-end-radius: var(--shape-xl);
+  }
+
+  li:last-child .entry {
+    border-end-start-radius: var(--shape-xl);
+    border-end-end-radius: var(--shape-xl);
+  }
+
+  .entry:hover {
+    border-radius: var(--shape-xl);
+    background-color: var(--md-sys-color-surface-container);
+  }
+
+  .when {
+    font: var(--type-label-l);
+    padding-block-start: 2px;
+  }
+
+  .what {
+    display: grid;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+
+  .title {
+    font: var(--type-title-m);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .sub {
+    font: var(--type-body-m);
+    overflow-wrap: anywhere;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-block-start: 8px;
+    font: var(--type-label-m);
+  }
+
+  .where::first-letter {
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 30rem) {
+    .entry {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>
