@@ -1,0 +1,57 @@
+---
+title: Unlock the bootloader
+description: Turn on OEM unlocking and unlock the Galaxy A12 (SM-A127F) bootloader from download mode.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+The bootloader decides what the phone is allowed to boot. Samsung ships it locked, and it has to be unlocked before
+anything custom will run.
+
+<Aside type="danger" title="This wipes the phone">
+  Unlocking erases everything on the device and trips Knox. Finish [Before you flash](../before-you-flash/) first.
+</Aside>
+
+## Turn on OEM unlocking
+
+<Steps>
+
+1. Open **Settings**, then **About phone**, then **Software information**.
+2. Tap **Build number** seven times. Enter your PIN if asked. Developer options are now on.
+3. Go back to **Settings** and open **Developer options** at the bottom.
+4. Turn on **OEM unlocking** and confirm.
+
+</Steps>
+
+<Aside type="tip" title="No OEM unlocking switch?">
+  Connect to Wi-Fi, check for a system update and give the phone some time online. On some firmware the switch only
+  shows up after the phone has checked in with Samsung.
+</Aside>
+
+## Unlock from download mode
+
+<Steps>
+
+1. Turn the phone off.
+2. Hold **Volume up** and **Volume down** together, and while holding them plug the phone into your computer. A
+   blue warning screen appears.
+3. **Long press Volume up** to open device unlock mode.
+4. Read the screen, then press **Volume up** once more to confirm. The phone wipes itself and restarts.
+
+</Steps>
+
+## Check it held
+
+<Steps>
+
+1. Go through the setup screens quickly. You can skip the accounts, but **connect to the internet**.
+2. Turn on Developer options again, as above.
+3. Open Developer options and check that **OEM unlocking** is on and greyed out, with a note that the bootloader is
+   already unlocked.
+
+</Steps>
+
+If the switch is missing after the unlock, stay online for a while and check again before you flash anything. Flashing
+while the phone still treats itself as locked can leave it refusing to boot until you restore stock firmware.
+
+Next: [install LineageOS](../install-lineageos/).

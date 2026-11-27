@@ -1,0 +1,48 @@
+---
+title: Start here
+description: How the guides are laid out, and the order to follow them in.
+---
+
+import { CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+These guides take you from a stock Samsung phone to a custom ROM, step by step. Read each one through before you
+start typing commands. Most problems come from a skipped step, not from the build.
+
+<Aside type="caution" title="Check your model first">
+  Every guide here is for the **Galaxy A12 SM-A127F** (Exynos 850, codename `a12s`). The MediaTek Galaxy A12
+  (SM-A125F) is a different phone inside and these files will not work on it.
+</Aside>
+
+## Galaxy A12 (a12s)
+
+Follow these in order the first time. After that you only need [Updating](./a12s/updating/).
+
+<CardGrid>
+  <LinkCard
+    title="1. Before you flash"
+    description="What you need, what you lose and how to back up."
+    href="./a12s/before-you-flash/"
+  />
+  <LinkCard
+    title="2. Unlock the bootloader"
+    description="Turn on OEM unlocking and unlock from download mode."
+    href="./a12s/unlock-bootloader/"
+  />
+  <LinkCard
+    title="3. Install LineageOS"
+    description="Flash the recovery, format data and sideload the ROM."
+    href="./a12s/install-lineageos/"
+  />
+  <LinkCard
+    title="4. Flash the SukiSU kernel"
+    description="Optional. A custom kernel with SukiSU Ultra root."
+    href="./a12s/flash-kernel/"
+  />
+</CardGrid>
+
+## Where the files are
+
+Downloads live on the [Galaxy A12 page](../a12s/). Every file there links straight to the GitHub release it came from
+and lists its SHA-256 checksum, so you can check a download before flashing it.
+
+Stuck? The [FAQ](../faq/) covers the common questions, and [Support](../support/) has the ways to reach a person.

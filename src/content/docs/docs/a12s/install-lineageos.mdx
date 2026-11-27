@@ -1,0 +1,96 @@
+---
+title: Install LineageOS
+description: Flash the recovery, format data and sideload LineageOS 23.2 on the Galaxy A12 (SM-A127F).
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This installs the unofficial LineageOS 23.2 (Android 16) build. You need an
+[unlocked bootloader](../unlock-bootloader/) before you start.
+
+## Get the files
+
+Open the [ROM downloads](../../../a12s/roms/) and pick a release. Official releases are the safe choice. From the
+same release, download:
+
+- the ROM zip, named like `lineage-23.2-<date>-UNOFFICIAL-varifocal-a12s-<build>.zip`
+- `recovery.img`
+
+Check both against the SHA-256 checksums on the release page. A corrupted download is the easiest problem to avoid.
+
+<Aside>
+  The release also has a `boot.img`. You do not need to flash it, the ROM zip installs its own boot image. It is there
+  in case you ever need to put the boot partition back by hand.
+</Aside>
+
+## Flash the recovery
+
+Put the phone in download mode: turn it off, hold **Volume up** and **Volume down**, and plug it into your computer.
+On the warning screen, **short press Volume up** to continue.
+
+<Tabs syncKey="flasher">
+  <TabItem label="Heimdall">
+
+    Run this from the folder with `recovery.img`:
+
+    ```sh
+    heimdall flash --RECOVERY recovery.img --no-reboot
+    ```
+
+  </TabItem>
+  <TabItem label="Odin (Windows)">
+
+    Odin only takes `.tar` files, so pack the image first:
+
+    ```sh
+    tar -cvf recovery.tar recovery.img
+    ```
+
+    In Odin, open **Options** and untick **Auto Reboot**. Load `recovery.tar` into the **AP** slot and press
+    **Start**.
+
+  </TabItem>
+</Tabs>
+
+Now go **straight into recovery**. Keep the cable plugged in, hold **Volume down** and **Power** to restart, and as soon
+as the screen turns black switch to holding **Volume up** and **Power** until the LineageOS recovery appears.
+
+<Aside type="caution" title="Do not let it boot into One UI">
+  Samsung's stock software puts its own recovery back when it starts. If the phone boots normally at this point, flash
+  `recovery.img` again and try the key combination once more.
+</Aside>
+
+## Format data and install
+
+<Steps>
+
+1. In recovery, choose **Factory reset**, then **Format data / factory reset**, and confirm. The release notes ask
+   for this, and skipping it is the usual reason a first boot fails.
+2. Go back to the main menu and choose **Apply update**, then **Apply from ADB**.
+3. On the computer, sideload the zip:
+
+   ```sh
+   adb sideload lineage-23.2-20261126-UNOFFICIAL-varifocal-a12s-rom38.zip
+   ```
+
+   Use the name of the file you downloaded. The transfer can stop at 47% and print
+   `adb: failed to read command: Success`. That is normal and means it worked.
+
+4. If the recovery warns that the signature could not be verified, you can continue as long as the SHA-256 matched.
+5. Go back and choose **Reboot system now**.
+
+</Steps>
+
+The first boot takes a few minutes. When the setup screen shows up, you are done.
+
+## If something goes wrong
+
+**The phone shows a verification error after flashing the recovery.** Samsung's verified boot is refusing the image.
+Do not keep flashing things at random. Ask in the [Telegram channel](https://t.me/Varifocal) with a photo of the
+screen.
+
+**It keeps booting back into recovery.** Format data again from recovery. Skipping the format is the usual cause.
+
+**Anything else.** See the [FAQ](../../../faq/), or how to get help on the [Support](../../../support/) page.
+
+Read [Updating](../updating/) before your first update, it is quicker than a fresh install.

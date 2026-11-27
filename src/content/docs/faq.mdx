@@ -1,0 +1,99 @@
+---
+title: FAQ
+description: Answers to the questions that come up most about Varifocal builds.
+tableOfContents:
+  maxHeadingLevel: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Devices
+
+### Which phones are supported?
+
+Only the **Samsung Galaxy A12 SM-A127F**, the Exynos 850 model. More devices may come later, and they will show up on
+the [downloads page](../) when they do.
+
+### Why does the site say a12s when my phone is a Galaxy A12?
+
+`a12s` is the codename of the SM-A127F. Android device trees, build files and ROM file names all use codenames rather
+than marketing names, so that is what you will see in file names like `lineage-23.2-...-a12s-rom38.zip`.
+
+The codename also keeps it apart from the other Galaxy A12. Samsung sold two very different phones under that name,
+and only the SM-A127F is the Exynos one these builds are for.
+
+### Will it work on the SM-A125F?
+
+No. The SM-A125F uses a MediaTek chip, so it needs completely different software. Do not flash these files on it.
+
+### How do I check my model?
+
+Open **Settings**, then **About phone**, and read **Model number**. Download mode also prints it as the product name
+at the top of the screen.
+
+## Builds
+
+### What is the difference between Official and Test builds?
+
+Official builds are the recommended releases. Test builds are GitHub pre-releases: they carry the newest changes and
+are there for people happy to find bugs. Each build page shows which one it is.
+
+### What works and what does not?
+
+Every release lists this in its notes, under **What works** and **Known issues**. Open a build from the
+[ROM downloads](../a12s/roms/) to see it.
+
+### Does LineageOS come with Google apps?
+
+No. LineageOS ships without them. The release notes do not cover any Google apps package yet, so ask on
+[Telegram](https://t.me/Varifocal) before trying one.
+
+### Why does the Updater app say there are no updates?
+
+These are unofficial builds and are not on LineageOS's update servers. Follow [Updating](../docs/a12s/updating/)
+instead.
+
+### How do I know a download is not corrupted?
+
+Every file on a build page has its SHA-256 checksum next to it. Run `sha256sum <file>` on Linux or macOS, or
+`certutil -hashfile <file> SHA256` on Windows, and compare the result before flashing.
+
+## Safety
+
+### Will this void my warranty?
+
+Unlocking the bootloader trips Samsung's Knox flag, which cannot be reset. Samsung may refuse warranty repairs on a
+phone with a tripped flag, and Knox features like Secure Folder and Samsung Wallet stop working for good.
+
+### Will my banking apps still work?
+
+Maybe not. Apps that check device integrity can refuse to run on a phone with an unlocked bootloader. Check the
+apps you depend on before you flash.
+
+### Is my data encrypted?
+
+It depends on the build. Every release lists **SELinux** and **Userdata** in its notes. Release 1 leaves user data
+unencrypted and runs SELinux in permissive mode, while newer test builds encrypt user data and enforce SELinux. On an
+unencrypted build, keep a screen lock on and keep sensitive data off the phone.
+
+<Aside type="caution">
+  Flash at your own risk. These builds come with no warranty, and the project is not affiliated with Samsung, Google or
+  LineageOS.
+</Aside>
+
+### How do I go back to Samsung's software?
+
+Download the stock firmware for the SM-A127F in your region and flash it with Odin. Using the `CSC` file, not
+`HOME_CSC`, gives you a clean start. Only relock the bootloader once stock has booted and is working.
+
+## This site
+
+### What does the Motion button in the footer do?
+
+It sets how much the site animates. **Full** turns on every spring and page transition. **Lite** turns them off,
+which helps on slow phones. **Auto** picks for you based on your system's reduced motion setting and how well your
+device keeps up.
+
+### Something on the site is wrong.
+
+Tell us on [Telegram](https://t.me/Varifocal), or edit the page on GitHub with the link at the bottom of any guide.
